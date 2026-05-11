@@ -1,0 +1,29 @@
+# Rust
+/target/
+Cargo.lock
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Proxies (contain credentials)
+/proxies/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cargo config (may contain registry tokens)
+.cargo/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

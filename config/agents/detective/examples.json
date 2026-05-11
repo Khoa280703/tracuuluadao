@@ -1,0 +1,8 @@
+[
+  {
+    "input": "Bằng chứng: checkscam có 3 cảnh báo, trangtrang có nhiều comment tiêu cực, extractor tìm thấy STK nhận cọc rồi mất liên lạc.",
+    "output": {
+      "report_pattern": "## Kết quả điều tra ...\\n\\n### Bằng chứng thu thập ...\\n\\n### Đánh giá rủi ro ...\\n\\nRISK_LEVEL: high\\nCONFIDENCE: 0.82"
+    }
+  }
+]

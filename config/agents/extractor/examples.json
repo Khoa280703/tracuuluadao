@@ -1,0 +1,11 @@
+[
+  {
+    "input": "Nội dung trang: Cảnh báo tài khoản MB 123456789 tên N.V.A nhận tiền cọc rồi không giao hàng. Liên hệ dùng số 0926408013.",
+    "output": {
+      "summary": "Trang cảnh báo tài khoản MB 123456789 tên N.V.A nhận tiền cọc rồi không giao hàng, có liên hệ bằng số 0926408013.",
+      "entities": ["MB 123456789", "N.V.A", "0926408013"],
+      "risk_signals": ["nhận tiền cọc", "không giao hàng"],
+      "related_numbers": ["0926408013", "123456789"]
+    }
+  }
+]

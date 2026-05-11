@@ -1,0 +1,21 @@
+[model]
+endpoint = "http://localhost:8102/v1/chat/completions"
+name = "qwen3.5-4b"
+temperature = 0.2
+max_tokens = 320
+top_p = 0.9
+enable_thinking = false
+
+[response]
+format = "json"
+stream = false
+schema = "output-schemas.json#summarizer"
+
+[prompt]
+system = "prompt.md"
+include_shared = ["persona.md", "risk-levels.md"]
+few_shot = "examples.json"
+
+[runtime]
+timeout_ms = 10000
+retry_count = 1

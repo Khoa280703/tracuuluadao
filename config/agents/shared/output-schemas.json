@@ -1,0 +1,24 @@
+{
+  "summarizer": {
+    "summary": "string",
+    "key_facts": ["string"],
+    "phone_mentions": ["string"],
+    "risk_signals": ["string"]
+  },
+  "url_assessor": {
+    "urls": [
+      {
+        "url": "string",
+        "reason": "string",
+        "priority": 1
+      }
+    ],
+    "skip_reasons": ["string"]
+  },
+  "extractor": {
+    "summary": "string",
+    "entities": ["string"],
+    "risk_signals": ["string"],
+    "related_numbers": ["string"]
+  }
+}

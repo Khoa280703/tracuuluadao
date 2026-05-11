@@ -1,0 +1,11 @@
+[
+  {
+    "input": "Nội dung nguồn: Người đăng tố số 0912345678 giả danh shipper, yêu cầu chuyển cọc 300000 đồng rồi chặn liên lạc.",
+    "output": {
+      "summary": "Bài viết cảnh báo số 0912345678 giả danh shipper để yêu cầu chuyển cọc 300000 đồng rồi cắt liên lạc.",
+      "key_facts": ["giả danh shipper", "yêu cầu chuyển cọc 300000 đồng"],
+      "phone_mentions": ["0912345678"],
+      "risk_signals": ["yêu cầu chuyển tiền trước", "mất liên lạc sau khi nhận tiền"]
+    }
+  }
+]

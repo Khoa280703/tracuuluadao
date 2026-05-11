@@ -1,0 +1,15 @@
+[
+  {
+    "input": "Kết quả tìm kiếm: 1) https://forum.example/post-1 - Bài tố cáo số 0926408013 giả mạo tuyển CTV. 2) https://shop.example - Trang chủ bán hàng.",
+    "output": {
+      "urls": [
+        {
+          "url": "https://forum.example/post-1",
+          "reason": "Có nội dung tố cáo trực tiếp số 0926408013",
+          "priority": 1
+        }
+      ],
+      "skip_reasons": ["Bỏ trang chủ shop.example vì không có nội dung điều tra cụ thể"]
+    }
+  }
+]
