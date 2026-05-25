@@ -198,8 +198,8 @@ Validation rules:
 - If `ADMIN_API_KEY` is absent, admin APIs remain disabled and return config errors
 
 Frontend runtime note:
-- The browser opens SSE against `${VITE_API_BASE_URL}/api/investigate?q={query}&type={type}` when `VITE_API_BASE_URL` is set, otherwise it falls back to same-origin `/api/investigate?...`.
-- After `complete`, the browser replays the buffered report from `${VITE_API_BASE_URL}/api/investigate/report?...` or same-origin fallback.
+- The browser opens SSE against `${VITE_API_BASE_URL}/api/investigate?q={query}&type={type}` in production deployments.
+- After `complete`, the browser replays the buffered report from `${VITE_API_BASE_URL}/api/investigate/report?...`.
 - The frontend also calls `/api/subjects/{value}/network` and `/api/reports` through the configured API base URL.
 
 ---
@@ -253,7 +253,7 @@ Frontend runtime note:
 4. Subject history and network APIs only return data after at least one investigation or report has been persisted for that normalized subject.
 5. Admin moderation currently uses a single shared header secret instead of scoped accounts.
 6. Admin moderation still relies on a single shared `ADMIN_API_KEY` secret instead of scoped accounts or sessions.
-7. Frontend depends on `/api/investigate` and `/api/subjects` being routed to the Rust backend outside SvelteKit route code.
+7. Frontend depends on `VITE_API_BASE_URL` being configured correctly for production builds.
 
 ---
 

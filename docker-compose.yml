@@ -1,15 +1,4 @@
 services:
-  gateway:
-    image: caddy:2.10-alpine
-    restart: unless-stopped
-    depends_on:
-      - frontend
-      - backend
-    expose:
-      - "8080"
-    volumes:
-      - ./deploy/coolify/Caddyfile:/etc/caddy/Caddyfile:ro
-
   frontend:
     build:
       context: ./frontend

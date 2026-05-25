@@ -35,8 +35,8 @@ Repomix snapshot summary:
 
 ### Operations
 
-- `docker-compose.yml` defines `gateway`, `frontend`, `backend`, `postgres`, and `redis`, but frontend can now run without `gateway` when `VITE_API_BASE_URL` is set.
-- `deploy/coolify/Caddyfile` remains available for legacy same-origin deployments.
+- `docker-compose.yml` defines `frontend`, `backend`, `postgres`, and `redis`.
+- production web/API routing is split by domain, with frontend using `VITE_API_BASE_URL` to reach the backend.
 - `deploy/systemd/` includes host-side service files for model servers and a backend service.
 
 ## Persistent Knowledge Base Feature

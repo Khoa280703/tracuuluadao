@@ -6,7 +6,6 @@
 
 - `Cloudflare -> Traefik/Coolify -> frontend`
 - `Cloudflare -> Traefik/Coolify -> backend`
-- tùy chọn tương thích ngược: `Cloudflare -> Traefik/Coolify -> gateway (Caddy) -> frontend/backend`
 - `frontend` và `backend` chạy trong Docker qua Coolify
 - `postgres` lưu cả cache TTL lẫn persistent knowledge base
 - `redis` dùng để buffer/replay báo cáo điều tra theo `investigation_id`
@@ -19,7 +18,6 @@
 - `docker-compose.yml` — stack để import vào Coolify
 - `Dockerfile.backend` — build backend Rust
 - `frontend/Dockerfile` — build frontend SvelteKit adapter-node
-- `deploy/coolify/Caddyfile` — reverse proxy tùy chọn cho mode same-origin cũ
 - `.env.coolify.example` — biến môi trường mẫu cho stack Coolify
 - `deploy/systemd/*.service` — service mẫu để chạy backend local + 2 lane model lúc boot
 - `deploy/systemd/tracuuluadao-models.env.example` — file mẫu để override path, model, GPU, port theo server thật
@@ -54,30 +52,13 @@ RUST_LOG=info
 VITE_API_BASE_URL=https://api.example.com
 ```
 
-`VITE_API_BASE_URL` là biến build-time của frontend. Khi set biến này, web sẽ gọi trực tiếp backend public và không còn phụ thuộc `gateway`.
+`VITE_API_BASE_URL` là biến build-time của frontend. Khi set biến này, web sẽ gọi trực tiếp backend public.
 
 `docker-compose.yml` hiện tự build:
 - `DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/tracuuluadao`
 - `REDIS_URL=${REDIS_URL:-redis://redis:6379/}`
 - `ADMIN_API_KEY=${ADMIN_API_KEY:-}`
 - `VITE_API_BASE_URL=${VITE_API_BASE_URL:-}`
-
-### Legacy: một public service qua gateway
-
-1. Tạo app mới từ repo này bằng `Docker Compose`.
-2. Chọn file compose: `docker-compose.yml`.
-3. Public service: `gateway`.
-4. Public port: `8080`.
-5. Set các env sau trong Coolify:
-
-```env
-POSTGRES_PASSWORD=change-me
-REDIS_URL=redis://redis:6379/
-INVESTIGATION_REPORT_TTL_SECS=3600
-RUST_LOG=info
-```
-
-Trong mode này, để `VITE_API_BASE_URL` trống để frontend tiếp tục dùng relative `/api`.
 
 ## Admin API Deployment Note
 
@@ -227,8 +208,8 @@ Log backend mới nên có các mốc:
 - Hai model GGUF hiện deploy qua repo này là:
   - `models/qwen35-9b-mtp-gguf/Qwen3.5-9B-UD-Q8_K_XL.gguf`
   - `models/qwopus3.6-35b-a3b-v1-gguf/Qwopus3.6-35B-A3B-v1-Q3_K_L.gguf`
-- Không expose `8001` hoặc `8101` qua Traefik/Coolify/Cloudflare. Chỉ expose frontend/backend public nếu deploy tách service; backend container sẽ gọi model qua `host.docker.internal`.
+- Không expose `8001` hoặc `8101` qua Traefik/Coolify/Cloudflare. Chỉ expose frontend/backend public; backend container sẽ gọi model qua `host.docker.internal`.
 - Backend container cần model service bind trên host `0.0.0.0`, không chỉ `127.0.0.1`, để `host.docker.internal` truy cập được.
 - Nếu firewall đang mở LAN, chỉ allow truy cập `8001` và `8101` từ host/container nội bộ.
-- Frontend ưu tiên gọi `VITE_API_BASE_URL` khi được set; nếu để trống thì frontend fallback về relative `/api` và vẫn chạy qua `gateway`.
+- Frontend production nên luôn set `VITE_API_BASE_URL` để gọi trực tiếp backend public.
 - `POST /api/reports` phụ thuộc PostgreSQL vì user reports nằm trong persistent knowledge base.

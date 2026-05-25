@@ -87,15 +87,15 @@ src/
 ### Request Lifecycle
 
 ```
-1. Browser opens `${VITE_API_BASE_URL}/api/investigate` or relative `/api/investigate` SSE
+1. Browser opens `${VITE_API_BASE_URL}/api/investigate` SSE
 2. Backend emits investigation_started
 3. Optional subject history is loaded from knowledge base
 4. Pipeline runs 5 investigation phases
 5. Detective chunks stream to Redis-backed replay store when available
 6. Complete event closes the process SSE
-7. Frontend opens `${VITE_API_BASE_URL}/api/investigate/report` or relative `/api/investigate/report` for buffered markdown replay
+7. Frontend opens `${VITE_API_BASE_URL}/api/investigate/report` for buffered markdown replay
 8. Investigation result is ingested into the knowledge base asynchronously
-9. Frontend loads `${VITE_API_BASE_URL}/api/subjects/{value}/network` or relative `/api/subjects/{value}/network` for linked-subject cards
+9. Frontend loads `${VITE_API_BASE_URL}/api/subjects/{value}/network` for linked-subject cards
 ```
 
 ### Investigation Pipeline
