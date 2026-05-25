@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quá trình truy quét - tracuuluadao.vn</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Lexend:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#825100",
+                        "outline-variant": "#c4c5d7",
+                        "surface-dim": "#d9d9e5",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f2fe",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-container": "#cad3ff",
+                        "on-background": "#1a1b23",
+                        "surface-tint": "#2151da",
+                        "on-error": "#ffffff",
+                        "outline": "#747686",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#434655",
+                        "secondary-fixed-dim": "#4edea3",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-secondary-fixed": "#002113",
+                        "on-surface": "#1a1b23",
+                        "surface-container": "#ededf9",
+                        "secondary": "#006c49",
+                        "primary-container": "#1d4ed8",
+                        "on-primary-fixed": "#001551",
+                        "inverse-surface": "#2e3039",
+                        "on-tertiary-container": "#ffcb8f",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary-container": "#6cf8bb",
+                        "surface-variant": "#e2e1ed",
+                        "on-secondary": "#ffffff",
+                        "primary": "#0037b0",
+                        "tertiary": "#623c00",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#00714d",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "inverse-primary": "#b7c4ff",
+                        "primary-fixed": "#dce1ff",
+                        "error": "#ba1a1a",
+                        "background": "#faf8ff",
+                        "surface-bright": "#faf8ff",
+                        "surface-container-highest": "#e2e1ed",
+                        "surface-container-high": "#e8e7f3",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Lexend"],
+                        "title-md": ["Lexend"],
+                        "headline-lg-mobile": ["Lexend"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Lexend"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(29, 78, 216, 0.05), 0 2px 4px -1px rgba(29, 78, 216, 0.03);
+        }
+        .progress-line {
+            width: 2px;
+            background-color: #e5e7eb;
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            bottom: -10px;
+            z-index: 0;
+        }
+        .progress-line-active {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-on-background flat no shadows docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-2 text-title-md font-title-md font-bold text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span>tracuuluadao.vn</span>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1" href="#">Trang chủ</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Hướng dẫn</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Câu hỏi thường gặp</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Blog</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center gap-2 text-primary font-medium px-4 py-2 rounded-full border border-primary/20 hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                    Báo cáo của tôi
+                </button>
+<button aria-label="User profile" class="text-primary hover:bg-primary/5 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 flex flex-col gap-gutter">
+<!-- Header Section -->
+<div class="text-center mb-8">
+<h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Đang phân tích dữ liệu...</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant">Hệ thống AI đang tổng hợp thông tin từ nhiều nguồn để đánh giá rủi ro.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Live Feed (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<div class="glass-card rounded-2xl p-6 bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-6 border-b border-outline-variant/30 pb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">youtube_searched_for</span>
+<h2 class="text-title-md font-title-md text-on-surface">Quá trình truy quét đang diễn ra...</h2>
+</div>
+<div class="flex items-center gap-2 text-secondary font-medium bg-secondary-container/20 px-3 py-1 rounded-full text-sm">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+                            Đang hoạt động
+                        </div>
+</div>
+<!-- Intro Box -->
+<div class="bg-primary-container/5 rounded-xl p-4 mb-6 flex gap-4 items-start border border-primary/10">
+<div class="bg-primary/10 p-2 rounded-full text-primary mt-1">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<div>
+<p class="font-medium text-on-surface">Hệ thống AI của chúng tôi đang truy quét thông tin bạn cung cấp trên toàn bộ internet.</p>
+<p class="text-on-surface-variant text-sm mt-1">Quá trình này có thể mất từ 30 giây đến vài phút.</p>
+</div>
+</div>
+<!-- Steps Timeline -->
+<div class="relative flex flex-col gap-6 pl-2">
+<!-- Step 1: Completed -->
+<div class="relative flex items-start gap-4 z-10">
+<div class="progress-line progress-line-active"></div>
+<div class="bg-secondary/10 p-2 rounded-full text-secondary flex-shrink-0 bg-surface-container-lowest z-10 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-medium text-on-surface">Đang chuẩn bị và xác thực thông tin...</h3>
+<span class="text-label-sm font-label-sm text-outline">10:32:15</span>
+</div>
+<p class="text-sm text-on-surface-variant mt-1">Đang kiểm tra định dạng và xác minh dữ liệu đầu vào</p>
+</div>
+</div>
+<!-- Step 2: Completed -->
+<div class="relative flex items-start gap-4 z-10">
+<div class="progress-line progress-line-active"></div>
+<div class="bg-secondary/10 p-2 rounded-full text-secondary flex-shrink-0 bg-surface-container-lowest z-10 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-medium text-on-surface">Đang tìm kiếm trên Google...</h3>
+<span class="text-label-sm font-label-sm text-outline">10:32:18</span>
+</div>
+<p class="text-sm text-on-surface-variant mt-1">Đã tìm thấy 12 kết quả liên quan</p>
+</div>
+</div>
+<!-- Step 3: Completed -->
+<div class="relative flex items-start gap-4 z-10">
+<div class="progress-line progress-line-active"></div>
+<div class="bg-secondary/10 p-2 rounded-full text-secondary flex-shrink-0 bg-surface-container-lowest z-10 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-medium text-on-surface">Đang quét mạng xã hội (Facebook, Zalo, TikTok...)</h3>
+<span class="text-label-sm font-label-sm text-outline">10:32:22</span>
+</div>
+<p class="text-sm text-on-surface-variant mt-1">Đã quét 5 nền tảng</p>
+</div>
+</div>
+<!-- Step 4: Active -->
+<div class="relative flex items-start gap-4 z-10">
+<div class="progress-line"></div>
+<div class="bg-primary/10 p-2 rounded-full text-primary flex-shrink-0 bg-surface-container-lowest z-10 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined animate-spin" style="font-variation-settings: 'FILL' 1;">progress_activity</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-medium text-primary">Đang tổng hợp và phân tích dữ liệu...</h3>
+<span class="text-label-sm font-label-sm text-outline">10:32:47</span>
+</div>
+<p class="text-sm text-primary/80 mt-1">AI đang phân tích mức độ rủi ro và tổng hợp thông tin</p>
+</div>
+</div>
+<!-- Step 5: Pending -->
+<div class="relative flex items-start gap-4 z-10 opacity-50">
+<div class="bg-surface-variant p-2 rounded-full text-outline flex-shrink-0 bg-surface-container-lowest z-10 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined">pending</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-medium text-on-surface">Hoàn tất! Đang tạo báo cáo...</h3>
+</div>
+<p class="text-sm text-on-surface-variant mt-1">Sắp xong, chỉ còn vài giây nữa thôi</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Did you know card -->
+<div class="bg-tertiary-container/10 border border-tertiary-container/20 rounded-xl p-5 flex gap-4 items-start">
+<div class="text-tertiary-container text-2xl">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div>
+<h4 class="font-medium text-on-surface mb-1">Bạn biết không?</h4>
+<p class="text-sm text-on-surface-variant">Chúng tôi sử dụng hàng trăm công cụ và AI agents để truy quét, phân tích và xác minh thông tin từ hàng ngàn nguồn trên internet.</p>
+</div>
+</div>
+</div>
+<!-- Right Column: Results Summary (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Risk Meter Card -->
+<div class="glass-card rounded-2xl p-6 bg-surface-container-lowest">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-title-md font-title-md text-on-surface">Kết luận sơ bộ</h2>
+<span class="text-xs bg-surface-variant text-on-surface-variant px-2 py-1 rounded">Cập nhật liên tục</span>
+</div>
+<div class="bg-error-container/30 border border-error/20 rounded-xl p-6 text-center mb-6">
+<div class="w-16 h-16 mx-auto bg-error/10 rounded-full flex items-center justify-center text-error mb-3">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<h3 class="text-title-md font-bold text-error mb-2">Nguy cơ cao</h3>
+<p class="text-sm text-on-surface-variant">Phát hiện nhiều dấu hiệu rủi ro liên quan đến thông tin này</p>
+</div>
+<div>
+<div class="flex justify-between text-sm mb-2">
+<span class="font-medium text-on-surface">Độ tin cậy kết quả</span>
+<span class="font-bold">85%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2.5 mb-2">
+<div class="bg-secondary h-2.5 rounded-full" style="width: 85%"></div>
+</div>
+<p class="text-xs text-on-surface-variant">Dữ liệu được tổng hợp từ 87 nguồn</p>
+</div>
+</div>
+<!-- Summary Card -->
+<div class="glass-card rounded-2xl p-6 bg-surface-container-lowest">
+<h2 class="text-title-md font-title-md text-on-surface mb-4">Tóm tắt phát hiện</h2>
+<ul class="space-y-4 mb-6">
+<li class="flex gap-3 text-sm">
+<span class="w-2 h-2 rounded-full bg-error mt-1.5 flex-shrink-0"></span>
+<span>Có <strong class="font-medium">7 phản ánh tiêu cực</strong> trên mạng xã hội</span>
+</li>
+<li class="flex gap-3 text-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim mt-1.5 flex-shrink-0"></span>
+<span>Liên quan đến <strong class="font-medium">3 vụ việc lừa đảo</strong> đã được báo cáo</span>
+</li>
+<li class="flex gap-3 text-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim mt-1.5 flex-shrink-0"></span>
+<span>Xuất hiện trong danh sách cảnh báo của 2 nguồn uy tín</span>
+</li>
+</ul>
+<button class="w-full bg-primary/5 hover:bg-primary/10 text-primary font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        Xem chi tiết trong báo cáo cuối cùng
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-dim full-width bottom w-full px-margin-mobile md:px-margin-desktop py-8 max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4 mt-auto">
+<p class="text-body-md font-body-md text-on-surface-variant dark:text-outline-variant">© 2024 tracuuluadao.vn. Chúng tôi cam kết bảo mật tuyệt đối thông tin của bạn.</p>
+<div class="flex gap-4 text-label-sm font-label-sm">
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">Về chúng tôi</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">Điều khoản sử dụng</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">Chính sách bảo mật</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">Liên hệ</a>
+</div>
+</footer>
+</body></html>

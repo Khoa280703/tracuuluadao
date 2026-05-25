@@ -1,0 +1,287 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tra cứu thông tin - Phát hiện rủi ro | tracuuluadao.vn</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Lexend:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#825100",
+                        "outline-variant": "#c4c5d7",
+                        "surface-dim": "#d9d9e5",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f2fe",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-container": "#cad3ff",
+                        "on-background": "#1a1b23",
+                        "surface-tint": "#2151da",
+                        "on-error": "#ffffff",
+                        "outline": "#747686",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#434655",
+                        "secondary-fixed-dim": "#4edea3",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-secondary-fixed": "#002113",
+                        "on-surface": "#1a1b23",
+                        "surface-container": "#ededf9",
+                        "secondary": "#006c49",
+                        "primary-container": "#1d4ed8",
+                        "on-primary-fixed": "#001551",
+                        "inverse-surface": "#2e3039",
+                        "on-tertiary-container": "#ffcb8f",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary-container": "#6cf8bb",
+                        "surface-variant": "#e2e1ed",
+                        "on-secondary": "#ffffff",
+                        "primary": "#0037b0",
+                        "tertiary": "#623c00",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface": "#faf8ff",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#00714d",
+                        "inverse-on-surface": "#f0f0fb",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "inverse-primary": "#b7c4ff",
+                        "primary-fixed": "#dce1ff",
+                        "error": "#ba1a1a",
+                        "background": "#faf8ff",
+                        "surface-bright": "#faf8ff",
+                        "surface-container-highest": "#e2e1ed",
+                        "surface-container-high": "#e8e7f3",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Lexend"],
+                        "title-md": ["Lexend"],
+                        "headline-lg-mobile": ["Lexend"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Lexend"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+                    },
+                    boxShadow: {
+                        'ambient-1': '0 4px 20px -5px rgba(29, 78, 216, 0.05)',
+                        'ambient-2': '0 10px 30px -5px rgba(29, 78, 216, 0.1)',
+                        'ambient-3': '0 20px 40px -10px rgba(29, 78, 216, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F9FAFB;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased bg-[#F9FAFB]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-on-background sticky top-0 z-50 w-full transition-all duration-200 flat no shadows">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-2 text-title-md font-title-md font-bold text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="shield" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="">tracuuluadao.vn</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors scale-98 transition-all duration-200" href="#">Trang chủ</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Hướng dẫn</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Câu hỏi thường gặp</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">Blog</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+                    Báo cáo của tôi
+                </button>
+<button aria-label="User profile" class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="bg-surface-container-low pt-12 pb-20 px-margin-mobile md:px-margin-desktop rounded-b-[40px] md:rounded-b-[60px] relative overflow-hidden">
+<!-- Decorative Background Elements -->
+<div class="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0iIzFkNGVkOCIvPjwvc3ZnPg==')]"></div>
+<div class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
+<div class="flex flex-col gap-6">
+<h1 class="text-display-lg font-display-lg text-on-surface">Tra cứu thông tin – Phát hiện rủi ro</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-lg">Nhập thông tin bạn nghi ngờ để chúng tôi truy quét toàn bộ internet và tìm dấu hiệu lừa đảo hoặc rủi ro liên quan.</p>
+<!-- Main Search Card -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-ambient-2 p-6 mt-4">
+<!-- Search Tabs -->
+<div class="flex overflow-x-auto pb-4 gap-2 border-b border-surface-variant mb-6 no-scrollbar">
+<button class="flex items-center gap-2 px-4 py-2 text-primary font-label-sm text-label-sm border-b-2 border-primary whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="call">call</span>
+                                Số điện thoại
+                            </button>
+<button class="flex items-center gap-2 px-4 py-2 text-on-surface-variant font-label-sm text-label-sm hover:text-primary transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="account_balance">account_balance</span>
+                                Số tài khoản
+                            </button>
+<button class="flex items-center gap-2 px-4 py-2 text-on-surface-variant font-label-sm text-label-sm hover:text-primary transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="link">link</span>
+                                URL / Website
+                            </button>
+<button class="flex items-center gap-2 px-4 py-2 text-on-surface-variant font-label-sm text-label-sm hover:text-primary transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="mail">mail</span>
+                                Email
+                            </button>
+</div>
+<!-- Input Area -->
+<div class="relative">
+<input class="w-full h-14 pl-4 pr-12 rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-body-md font-body-md transition-colors placeholder:text-outline" placeholder="Nhập số điện thoại cần tra cứu (VD: 09xxxxxxxx)" type="text">
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<button class="w-full mt-6 bg-primary text-on-primary h-12 rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary-container hover:-translate-y-0.5 transition-all shadow-sm hover:shadow-ambient-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+                            Bắt đầu tra cứu
+                        </button>
+<div class="mt-4 flex items-center justify-center gap-2 text-label-sm font-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]" data-icon="lock">lock</span>
+                            Chúng tôi cam kết bảo mật tuyệt đối thông tin của bạn.
+                        </div>
+</div>
+</div>
+<div class="hidden md:flex flex-col gap-4 w-full max-w-[480px] h-[500px] bg-surface-container-lowest rounded-2xl shadow-ambient-3 border border-error/10 overflow-hidden relative">
+    <div class="p-5 border-b border-surface-variant flex items-center justify-between bg-surface-bright">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-error"></span>
+                </span>
+                <h2 class="text-title-md font-bold text-on-surface uppercase tracking-tight">Cảnh báo lừa đảo mới nhất</h2>
+            </div>
+        </div>
+        <span class="text-label-sm font-medium text-error bg-error/10 px-2 py-0.5 rounded">TRỰC TIẾP</span>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="p-4 rounded-xl bg-error/5 border border-error/10 flex items-start gap-4 transition-all hover:bg-error/10">
+            <div class="w-10 h-10 rounded-full bg-error/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-error" data-icon="call">call</span>
+            </div>
+            <div class="flex-1">
+                <p class="text-body-md font-semibold text-on-surface">SĐT 098x...342 vừa bị báo cáo lừa đảo tài chính</p>
+                <p class="text-label-sm text-outline mt-1">Vừa xong • Hà Nội</p>
+            </div>
+        </div>
+        <div class="p-4 rounded-xl bg-tertiary/5 border border-tertiary/10 flex items-start gap-4 transition-all hover:bg-tertiary/10">
+            <div class="w-10 h-10 rounded-full bg-tertiary/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-tertiary" data-icon="link">link</span>
+            </div>
+            <div class="flex-1">
+                <p class="text-body-md font-semibold text-on-surface">URL bit.ly/shopee-qua-tang... chứa mã độc đánh cắp thông tin</p>
+                <p class="text-label-sm text-outline mt-1">2 phùt trước • TP.HCM</p>
+            </div>
+        </div>
+        <div class="p-4 rounded-xl bg-error/5 border border-error/10 flex items-start gap-4 transition-all hover:bg-error/10">
+            <div class="w-10 h-10 rounded-full bg-error/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-error" data-icon="account_balance">account_balance</span>
+            </div>
+            <div class="flex-1">
+                <p class="text-body-md font-semibold text-on-surface">STK 1903xxx888: Nghi vấn rứa tiền từ hoạt động tín dụng đen</p>
+                <p class="text-label-sm text-outline mt-1">5 phùt trước • Đà Nẵng</p>
+            </div>
+        </div>
+        <div class="p-4 rounded-xl bg-tertiary/5 border border-tertiary/10 flex items-start gap-4 transition-all hover:bg-tertiary/10">
+            <div class="w-10 h-10 rounded-full bg-tertiary/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-tertiary" data-icon="mail">mail</span>
+            </div>
+            <div class="flex-1">
+                <p class="text-body-md font-semibold text-on-surface">Email support-apple-vn... mạo danh tìm kiếm thiết bị</p>
+                <p class="text-label-sm text-outline mt-1">12 phùt trước • Hải Phòng</p>
+            </div>
+        </div>
+    </div>
+    <div class="p-4 bg-surface-container-low text-center">
+        <button class="text-label-sm font-bold text-primary hover:underline">Xem tất cả cảnh báo</button>
+    </div>
+</div>
+</div>
+</section>
+<!-- Trust Features -->
+<section class="py-16 px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="flex flex-col items-center text-center p-6 bg-surface-container-lowest rounded-2xl shadow-ambient-1 hover:shadow-ambient-2 transition-shadow">
+<div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[32px]" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<h3 class="text-title-md font-title-md text-on-surface mb-2">Bảo mật tuyệt đối</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">Cam kết không lưu trữ thông tin cá nhân của bạn.</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 bg-surface-container-lowest rounded-2xl shadow-ambient-1 hover:shadow-ambient-2 transition-shadow">
+<div class="w-16 h-16 bg-secondary-fixed rounded-full flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[32px]" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<h3 class="text-title-md font-title-md text-on-surface mb-2">Truy quét mạnh mẽ</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">Sử dụng AI và hàng trăm công cụ để tìm kiếm thông tin nhanh chóng.</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 bg-surface-container-lowest rounded-2xl shadow-ambient-1 hover:shadow-ambient-2 transition-shadow">
+<div class="w-16 h-16 bg-[#e6e0ff] rounded-full flex items-center justify-center text-[#5533ff] mb-4">
+<span class="material-symbols-outlined text-[32px]" data-icon="donut_large" style="font-variation-settings: 'FILL' 1;">donut_large</span>
+</div>
+<h3 class="text-title-md font-title-md text-on-surface mb-2">Báo cáo dễ hiểu</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">Kết quả được trình bày rõ ràng, dễ hiểu cho mọi đối tượng.</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 bg-surface-container-lowest rounded-2xl shadow-ambient-1 hover:shadow-ambient-2 transition-shadow">
+<div class="w-16 h-16 bg-tertiary-fixed rounded-full flex items-center justify-center text-tertiary mb-4">
+<span class="material-symbols-outlined text-[32px]" data-icon="lock_open" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+</div>
+<h3 class="text-title-md font-title-md text-on-surface mb-2">Miễn phí cơ bản</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">Tra cứu cơ bản miễn phí, nâng cao với nhiều ưu đãi.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-dim mt-12 w-full px-margin-mobile md:px-margin-desktop py-8 flat no shadows text-body-md font-body-md text-on-surface-variant dark:text-outline-variant">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="">© 2024 tracuuluadao.vn. Chúng tôi cam kết bảo mật tuyệt đối thông tin của bạn.</p>
+<div class="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-label-sm font-label-sm">
+<a class="hover:underline transition-all" href="#">Về chúng tôi</a>
+<a class="hover:underline transition-all" href="#">Điều khoản sử dụng</a>
+<a class="hover:underline transition-all" href="#">Chính sách bảo mật</a>
+<a class="hover:underline transition-all" href="#">Liên hệ</a>
+</div>
+</div>
+</footer>
+
+
+</body></html>
