@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
-use crate::scrapers::{ScrapedResult, SearchResult};
+use crate::scrapers::ScrapedResult;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -37,6 +37,7 @@ impl FromStr for QueryType {
 
 #[derive(Debug, Clone)]
 pub struct Investigation {
+    pub request_id: String,
     pub query: String,
     pub query_type: QueryType,
 }
@@ -53,6 +54,8 @@ pub struct AgentSummary {
     pub phone_mentions: Vec<String>,
     #[serde(default)]
     pub risk_signals: Vec<String>,
+    #[serde(default)]
+    pub evidence_urls: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -93,6 +96,9 @@ pub struct InvestigationResult {
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum InvestigationEvent {
+    InvestigationStarted {
+        investigation_id: String,
+    },
     PhaseStart {
         phase: u8,
         label: String,
@@ -102,6 +108,7 @@ pub enum InvestigationEvent {
         source: String,
         status: String,
         found: usize,
+        message: String,
     },
     Progress {
         phase: u8,
@@ -120,12 +127,21 @@ pub enum InvestigationEvent {
         url: String,
         result: AgentExtraction,
     },
+    HistoricalContext {
+        investigation_count: i32,
+        last_risk_level: String,
+        approved_reports: i32,
+        linked_subjects_count: i32,
+        first_seen: String,
+        last_seen: String,
+    },
     DetectiveStream {
         chunk: String,
         done: bool,
         replace: bool,
     },
     Complete {
+        investigation_id: String,
         risk_level: String,
         confidence: f32,
         sources_analyzed: usize,
@@ -141,15 +157,17 @@ pub enum InvestigationEvent {
 impl InvestigationEvent {
     pub fn event_name(&self) -> &'static str {
         match self {
+            Self::InvestigationStarted { .. } => "investigation_started",
             Self::PhaseStart { .. } => "phase_start",
             Self::SourceStatus { .. } => "source_status",
             Self::Progress { .. } => "progress",
             Self::SummaryResult { .. } => "summary_result",
             Self::UrlAssessment { .. } => "url_assessment",
             Self::ExtractionResult { .. } => "extraction_result",
+            Self::HistoricalContext { .. } => "historical_context",
             Self::DetectiveStream { .. } => "detective_stream",
             Self::Complete { .. } => "complete",
-            Self::Error { .. } => "error",
+            Self::Error { .. } => "investigation_error",
         }
     }
 }
@@ -158,13 +176,6 @@ impl InvestigationEvent {
 pub struct UrlAssessmentResponse {
     #[serde(default)]
     pub urls: Vec<SelectedUrl>,
-}
-
-pub fn collect_search_results(results: &[ScrapedResult]) -> Vec<SearchResult> {
-    results
-        .iter()
-        .flat_map(|item| item.search_results.clone())
-        .collect()
 }
 
 #[cfg(test)]

@@ -7,10 +7,11 @@ pub struct AppConfig {
     pub app_host: String,
     pub app_port: u16,
     pub database_url: Option<String>,
+    pub redis_url: Option<String>,
+    pub admin_api_key: Option<String>,
+    pub investigation_report_ttl_secs: u64,
     pub proxy_dir: String,
     pub agent_config_dir: String,
-    pub qwen35_endpoint: String,
-    pub qwen36_endpoint: String,
 }
 
 impl AppConfig {
@@ -21,10 +22,20 @@ impl AppConfig {
                 .parse()
                 .map_err(|_| AppError::Config("APP_PORT must be a valid u16".to_string()))?,
             database_url: optional_env_var("DATABASE_URL"),
+            redis_url: optional_env_var("REDIS_URL"),
+            admin_api_key: optional_env_var("ADMIN_API_KEY"),
+            investigation_report_ttl_secs: optional_env_var("INVESTIGATION_REPORT_TTL_SECS")
+                .map(|value| {
+                    value.parse().map_err(|_| {
+                        AppError::Config(
+                            "INVESTIGATION_REPORT_TTL_SECS must be a valid u64".to_string(),
+                        )
+                    })
+                })
+                .transpose()?
+                .unwrap_or(3600),
             proxy_dir: env_var("PROXY_DIR")?,
             agent_config_dir: env_var("AGENT_CONFIG_DIR")?,
-            qwen35_endpoint: env_var("QWEN35_ENDPOINT")?,
-            qwen36_endpoint: env_var("QWEN36_ENDPOINT")?,
         })
     }
 }

@@ -69,29 +69,18 @@ pub struct LoadedAgent {
     pub prompt_hash: String,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct EndpointOverrides {
-    pub qwen35_endpoint: Option<String>,
-    pub qwen36_endpoint: Option<String>,
-}
-
 #[derive(Debug)]
 pub struct AgentRegistry {
     config_dir: PathBuf,
-    endpoint_overrides: EndpointOverrides,
     agents: RwLock<HashMap<String, Arc<LoadedAgent>>>,
 }
 
 impl AgentRegistry {
-    pub fn load_all(
-        config_dir: impl AsRef<Path>,
-        endpoint_overrides: EndpointOverrides,
-    ) -> AppResult<Arc<Self>> {
+    pub fn load_all(config_dir: impl AsRef<Path>) -> AppResult<Arc<Self>> {
         let config_dir = config_dir.as_ref().to_path_buf();
-        let agents = load_agents(&config_dir, &endpoint_overrides)?;
+        let agents = load_agents(&config_dir)?;
         Ok(Arc::new(Self {
             config_dir,
-            endpoint_overrides,
             agents: RwLock::new(agents),
         }))
     }
@@ -106,7 +95,7 @@ impl AgentRegistry {
     }
 
     pub fn reload(&self) -> AppResult<()> {
-        let agents = load_agents(&self.config_dir, &self.endpoint_overrides)?;
+        let agents = load_agents(&self.config_dir)?;
         *self
             .agents
             .write()
@@ -132,10 +121,7 @@ impl AgentRegistry {
     }
 }
 
-fn load_agents(
-    config_dir: &Path,
-    endpoint_overrides: &EndpointOverrides,
-) -> AppResult<HashMap<String, Arc<LoadedAgent>>> {
+fn load_agents(config_dir: &Path) -> AppResult<HashMap<String, Arc<LoadedAgent>>> {
     let shared_dir = config_dir.join("shared");
     let mut agents = HashMap::new();
 
@@ -157,8 +143,7 @@ fn load_agents(
         let config: AgentFileConfig = toml::from_str(&raw_config).map_err(|error| {
             AppError::Config(format!("invalid agent config for {key}: {error}"))
         })?;
-        let mut model = config.model;
-        apply_endpoint_override(&mut model, endpoint_overrides);
+        let model = config.model;
         let mut system_parts = Vec::new();
         for include in &config.prompt.include_shared {
             system_parts.push(read_text(&shared_dir.join(include))?);
@@ -204,17 +189,4 @@ fn hash_text(input: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(input.as_bytes());
     format!("{:x}", hasher.finalize())
-}
-
-fn apply_endpoint_override(model: &mut ModelConfig, endpoint_overrides: &EndpointOverrides) {
-    let model_name = model.name.to_ascii_lowercase();
-    if model_name.contains("qwen3.5") {
-        if let Some(endpoint) = endpoint_overrides.qwen35_endpoint.as_ref() {
-            model.endpoint = endpoint.clone();
-        }
-    } else if model_name.contains("qwen3.6") {
-        if let Some(endpoint) = endpoint_overrides.qwen36_endpoint.as_ref() {
-            model.endpoint = endpoint.clone();
-        }
-    }
 }

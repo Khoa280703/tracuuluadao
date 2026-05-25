@@ -1,0 +1,9 @@
+{
+  "name": "google-browser-sidecar",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "cloakbrowser": "^0.3.30",
+    "playwright-core": "1.54.2"
+  }
+}

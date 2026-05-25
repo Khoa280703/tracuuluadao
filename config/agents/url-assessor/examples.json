@@ -11,5 +11,54 @@
       ],
       "skip_reasons": ["Bỏ trang chủ shop.example vì không có nội dung điều tra cụ thể"]
     }
+  },
+  {
+    "input": "Kết quả tìm kiếm: 1) https://checkscam.vn/nguyen-dinh-thang-25/ - Bài cảnh báo cụ thể về số 0562015037. 2) https://checkscam.vn/nguyen-dinh-thang-25/?utm_source=google - Cùng bài nhưng có tracking param. 3) https://www.facebook.com/groups/2659887910844175/posts/3354541331378826/ - Bài post nhóm chứa nội dung tố cáo trực tiếp. 4) https://www.adda247.com/jobs/file.pdf?srsltid=abc - PDF không liên quan rõ. 5) https://checkscam.vn/ - Trang chủ nền tảng.",
+    "output": {
+      "urls": [
+        {
+          "url": "https://www.facebook.com/groups/2659887910844175/posts/3354541331378826/",
+          "reason": "Ưu tiên nguồn ngoài vì đây là bài post cộng đồng cụ thể, có khả năng chứa lời tố cáo trực tiếp và domain này chưa có scraper riêng",
+          "priority": 1
+        },
+        {
+          "url": "https://checkscam.vn/nguyen-dinh-thang-25/",
+          "reason": "Giữ thêm 1 bài cảnh báo cụ thể từ nền tảng đã có scraper riêng vì vẫn là bằng chứng trực tiếp mạnh",
+          "priority": 2
+        }
+      ],
+      "skip_reasons": [
+        "Bỏ URL checkscam có tracking param vì trùng nội dung với bài đã chọn",
+        "Bỏ file PDF vì khó là bài cảnh báo trực tiếp cho truy vấn này",
+        "Bỏ trang chủ checkscam vì quá chung chung"
+      ]
+    }
+  },
+  {
+    "input": "Dữ liệu có 6 kết quả: 1) Facebook group post tố cáo trực tiếp số 0909000001. 2) Bài forum tố cáo giao dịch với số 0909000001. 3) checkscam.vn bài cảnh báo cụ thể. 4) Bài hướng dẫn cách nhận biết số điện thoại lừa đảo có nhắc 0909000001 ở cuối. 5) PDF tổng hợp số điện thoại. 6) Một Facebook post khác gần như cùng tiêu đề và cùng snippet với kết quả số 1.",
+    "output": {
+      "urls": [
+        {
+          "url": "https://www.facebook.com/groups/example/posts/1/",
+          "reason": "Bài tố cáo trực tiếp, cụ thể, là nguồn ngoài nền tảng scraper riêng",
+          "priority": 1
+        },
+        {
+          "url": "https://forum.example/thread-0909000001",
+          "reason": "Thêm nguồn cộng đồng khác loại, có khả năng mô tả case riêng biệt",
+          "priority": 2
+        },
+        {
+          "url": "https://checkscam.vn/canh-bao-0909000001/",
+          "reason": "Giữ làm bằng chứng bổ sung vì là bài cảnh báo trực tiếp, dù domain này đã có scraper riêng",
+          "priority": 3
+        }
+      ],
+      "skip_reasons": [
+        "Bỏ bài hướng dẫn chung vì không phải case tố cáo cụ thể",
+        "Bỏ PDF tổng hợp vì tín hiệu điều tra thấp",
+        "Bỏ Facebook post trùng nội dung với kết quả số 1"
+      ]
+    }
   }
 ]

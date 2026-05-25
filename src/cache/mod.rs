@@ -7,7 +7,6 @@ use tokio::time::MissedTickBehavior;
 
 use crate::error::AppResult;
 use crate::pipeline::{InvestigationResult, QueryType};
-use crate::scrapers::ScrapedResult;
 
 const CACHE_CLEANUP_INTERVAL: Duration = Duration::from_secs(6 * 60 * 60);
 
@@ -17,35 +16,18 @@ pub struct CacheService {
 }
 
 impl CacheService {
-    pub fn new(database_url: &str) -> AppResult<Self> {
-        Ok(Self {
-            pool: PgPoolOptions::new()
-                .max_connections(5)
-                .connect_lazy(database_url)?,
-        })
+    pub fn connect_pool(database_url: &str) -> AppResult<PgPool> {
+        PgPoolOptions::new()
+            .max_connections(5)
+            .connect_lazy(database_url)
+            .map_err(Into::into)
+    }
+
+    pub fn from_pool(pool: PgPool) -> Self {
+        Self { pool }
     }
 
     pub async fn ensure_schema(&self) -> AppResult<()> {
-        sqlx::query(
-            "CREATE TABLE IF NOT EXISTS scrape_cache (
-                id BIGSERIAL PRIMARY KEY,
-                query TEXT NOT NULL,
-                query_type TEXT NOT NULL,
-                source TEXT NOT NULL,
-                result JSONB NOT NULL,
-                created_at TIMESTAMPTZ DEFAULT NOW(),
-                expires_at TIMESTAMPTZ NOT NULL
-            )",
-        )
-        .execute(&self.pool)
-        .await?;
-        sqlx::query(
-            "CREATE INDEX IF NOT EXISTS idx_scrape_cache_lookup
-             ON scrape_cache(query_type, query, source, expires_at)",
-        )
-        .execute(&self.pool)
-        .await?;
-
         sqlx::query(
             "CREATE TABLE IF NOT EXISTS analysis_cache (
                 id BIGSERIAL PRIMARY KEY,
@@ -88,14 +70,14 @@ impl CacheService {
         .execute(&self.pool)
         .await?;
 
+        sqlx::query("DROP TABLE IF EXISTS scrape_cache")
+            .execute(&self.pool)
+            .await?;
+
         Ok(())
     }
 
     pub async fn cleanup_expired(&self) -> AppResult<u64> {
-        let scrape_deleted = sqlx::query("DELETE FROM scrape_cache WHERE expires_at <= NOW()")
-            .execute(&self.pool)
-            .await?
-            .rows_affected();
         let analysis_deleted = sqlx::query("DELETE FROM analysis_cache WHERE expires_at <= NOW()")
             .execute(&self.pool)
             .await?
@@ -106,50 +88,7 @@ impl CacheService {
                 .await?
                 .rows_affected();
 
-        Ok(scrape_deleted + analysis_deleted + investigation_deleted)
-    }
-
-    pub async fn get_scrape(
-        &self,
-        query_type: QueryType,
-        query: &str,
-        source: &str,
-    ) -> AppResult<Option<ScrapedResult>> {
-        let row = sqlx::query_scalar::<_, serde_json::Value>(
-            "SELECT result FROM scrape_cache
-             WHERE query_type = $1 AND query = $2 AND source = $3 AND expires_at > NOW()
-             ORDER BY created_at DESC LIMIT 1",
-        )
-        .bind(query_type.as_str())
-        .bind(query)
-        .bind(source)
-        .fetch_optional(&self.pool)
-        .await?;
-        row.map(serde_json::from_value)
-            .transpose()
-            .map_err(Into::into)
-    }
-
-    pub async fn set_scrape(
-        &self,
-        query_type: QueryType,
-        query: &str,
-        source: &str,
-        result: &ScrapedResult,
-        ttl_hours: i64,
-    ) -> AppResult<()> {
-        sqlx::query(
-            "INSERT INTO scrape_cache (query_type, query, source, result, expires_at)
-             VALUES ($1, $2, $3, $4, NOW() + make_interval(hours => $5::int))",
-        )
-        .bind(query_type.as_str())
-        .bind(query)
-        .bind(source)
-        .bind(serde_json::to_value(result)?)
-        .bind(ttl_hours)
-        .execute(&self.pool)
-        .await?;
-        Ok(())
+        Ok(analysis_deleted + investigation_deleted)
     }
 
     pub async fn get_analysis(

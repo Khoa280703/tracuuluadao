@@ -1,8 +1,8 @@
 [model]
-endpoint = "http://localhost:8102/v1/chat/completions"
-name = "qwen3.5-4b"
+endpoint = "http://host.docker.internal:8001/v1/chat/completions"
+name = ""
 temperature = 0.2
-max_tokens = 360
+max_tokens = 600
 top_p = 0.9
 enable_thinking = false
 

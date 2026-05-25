@@ -1,8 +1,8 @@
 [model]
-endpoint = "http://localhost:8102/v1/chat/completions"
-name = "qwen3.5-4b"
+endpoint = "http://host.docker.internal:8001/v1/chat/completions"
+name = ""
 temperature = 0.1
-max_tokens = 260
+max_tokens = 900
 top_p = 0.9
 enable_thinking = false
 
@@ -17,5 +17,5 @@ include_shared = ["persona.md", "risk-levels.md"]
 few_shot = "examples.json"
 
 [runtime]
-timeout_ms = 10000
+timeout_ms = 20000
 retry_count = 1

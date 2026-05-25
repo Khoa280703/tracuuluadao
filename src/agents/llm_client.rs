@@ -210,7 +210,15 @@ fn build_messages(agent: &LoadedAgent, user_content: &str) -> Vec<Message> {
     messages
 }
 
-fn request_body(agent: &LoadedAgent, messages: Vec<Message>, stream: bool) -> Value {
+fn request_body(agent: &LoadedAgent, mut messages: Vec<Message>, stream: bool) -> Value {
+    let use_content_prefill = should_use_content_prefill(agent, stream);
+    if use_content_prefill {
+        messages.push(Message {
+            role: "assistant".to_string(),
+            content: String::new(),
+        });
+    }
+
     let mut body = json!({
         "model": agent.model.name,
         "messages": messages,
@@ -223,11 +231,30 @@ fn request_body(agent: &LoadedAgent, messages: Vec<Message>, stream: bool) -> Va
         }
     });
 
+    if use_content_prefill {
+        // llama.cpp on the local 8001 JSON worker still opens `<think>` even when
+        // enable_thinking=false. Assistant prefill keeps generation on content.
+        body["continue_final_message"] = json!(true);
+        body["add_generation_prompt"] = json!(false);
+    }
+
     if agent.response.format == ResponseFormat::Json {
         body["response_format"] = json!({ "type": "json_object" });
     }
 
     body
+}
+
+fn should_use_content_prefill(agent: &LoadedAgent, stream: bool) -> bool {
+    !stream
+        && agent.response.format == ResponseFormat::Json
+        && matches_local_reasoning_endpoint(&agent.model.endpoint)
+}
+
+fn matches_local_reasoning_endpoint(endpoint: &str) -> bool {
+    endpoint.contains("://localhost:8001/")
+        || endpoint.contains("://127.0.0.1:8001/")
+        || endpoint.contains("://host.docker.internal:8001/")
 }
 
 fn repair_json<T: DeserializeOwned>(content: &str) -> AppResult<Option<T>> {
@@ -242,6 +269,10 @@ fn repair_json<T: DeserializeOwned>(content: &str) -> AppResult<Option<T>> {
         }
     }
 
+    // Strip thinking tokens: <think>...</think>
+    let content = strip_thinking_tags(content);
+    let content = content.trim();
+
     let start = content.find(['{', '[']);
     let end = content.rfind(['}', ']']);
     let Some((start, end)) = start.zip(end) else {
@@ -252,7 +283,69 @@ fn repair_json<T: DeserializeOwned>(content: &str) -> AppResult<Option<T>> {
         return Ok(Some(value));
     }
 
+    // Try fixing truncated JSON by closing open braces/brackets
+    if let Some(value) = try_close_json::<T>(candidate) {
+        return Ok(Some(value));
+    }
+
+    // Try removing trailing comma before closing brace/bracket
+    let fixed = candidate.replace(",}", "}").replace(",]", "]");
+    if let Ok(value) = serde_json::from_str::<T>(&fixed) {
+        return Ok(Some(value));
+    }
+
     Ok(None)
+}
+
+fn strip_thinking_tags(content: &str) -> &str {
+    if let Some(end) = content.find("</think>") {
+        content[end + 8..].trim()
+    } else {
+        content
+    }
+}
+
+fn try_close_json<T: DeserializeOwned>(content: &str) -> Option<T> {
+    let mut open_braces = 0i32;
+    let mut open_brackets = 0i32;
+    let mut in_string = false;
+    let mut escape_next = false;
+
+    for ch in content.chars() {
+        if escape_next {
+            escape_next = false;
+            continue;
+        }
+        match ch {
+            '\\' if in_string => escape_next = true,
+            '"' => in_string = !in_string,
+            '{' if !in_string => open_braces += 1,
+            '}' if !in_string => open_braces -= 1,
+            '[' if !in_string => open_brackets += 1,
+            ']' if !in_string => open_brackets -= 1,
+            _ => {}
+        }
+    }
+
+    if open_braces <= 0 && open_brackets <= 0 {
+        return None;
+    }
+
+    let mut fixed = content.to_string();
+    // Remove potential trailing incomplete key-value
+    if let Some(last_comma) = fixed.rfind(',') {
+        let after = fixed[last_comma + 1..].trim();
+        if after.starts_with('"') && !after.contains(':') {
+            fixed.truncate(last_comma);
+        }
+    }
+    for _ in 0..open_brackets {
+        fixed.push(']');
+    }
+    for _ in 0..open_braces {
+        fixed.push('}');
+    }
+    serde_json::from_str::<T>(&fixed).ok()
 }
 
 fn strip_code_fence(content: &str) -> Option<&str> {

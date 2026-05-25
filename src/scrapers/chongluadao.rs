@@ -38,9 +38,15 @@ async fn scrape_impl(
     let exists_json: Value = client.get_json_value(&exists_url).await?;
     let mut result = ScrapedResult::success(SourceName::ChongLuaDao, query, started_at);
     result.reports = collect_reports(&phone_json);
+    let sub_sources = result
+        .reports
+        .iter()
+        .map(|report| report.title.clone())
+        .collect::<Vec<_>>();
     result.metadata = json!({
-        "phone_lookup": phone_json,
-        "check_exists": exists_json,
+        "has_any_match": exists_json.get("exists").and_then(Value::as_bool).unwrap_or(false),
+        "sub_sources_with_data": sub_sources,
+        "sub_source_count": result.reports.len(),
     });
     Ok(result)
 }

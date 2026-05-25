@@ -1,4 +1,5 @@
 pub mod investigation;
+mod knowledge_base;
 pub mod state;
 pub mod url_fetcher;
 
