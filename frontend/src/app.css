@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    font-family: "Inter", sans-serif;
+    background-color: #f8fafc;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    color: #334155;
+    font-family: "Inter", sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-btn {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  }
+
+  .gradient-btn:hover {
+    background: linear-gradient(to right, #2563eb, #7c3aed);
+  }
+
+  .nav-link.active {
+    color: #3b82f6;
+    font-weight: 600;
+    position: relative;
+  }
+
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes blob-drift {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+      transform: translate(-40px, 30px) scale(1.08);
+    }
+
+    66% {
+      transform: translate(30px, -25px) scale(0.94);
+    }
+  }
+
+  @keyframes float-y {
+    0%, 100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .anim-0 {
+    animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .anim-float {
+    animation: float-y 5s ease-in-out infinite;
+  }
+
+  .anim-float-2 {
+    animation: float-y 6s ease-in-out 1.5s infinite;
+  }
+
+  .narrative-fade-in {
+    animation: fade-up 0.28s ease-out forwards;
+  }
+}

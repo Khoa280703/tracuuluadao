@@ -27,3 +27,10 @@ Thumbs.db
 __pycache__/
 *.pyc
 .venv/
+
+# Node
+node_modules/
+
+# Runtime logs
+logs/
+**/logs/
