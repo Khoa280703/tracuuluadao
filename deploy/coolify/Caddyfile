@@ -1,0 +1,9 @@
+:8080 {
+	encode gzip zstd
+
+	@backend path /api/* /health
+	reverse_proxy @backend backend:3067
+
+	reverse_proxy frontend:3000
+}
+

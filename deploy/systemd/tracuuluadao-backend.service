@@ -1,0 +1,24 @@
+[Unit]
+Description=TraCuuLuaDao Rust backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=khoa2807
+WorkingDirectory=/home/khoa2807/working-sources/tracuuluadao
+EnvironmentFile=/home/khoa2807/working-sources/tracuuluadao/.env
+Environment=RUST_LOG=info
+Environment=APP_LOG_DIR=/var/log/tracuuluadao
+Environment=APP_LOG_FILE_PREFIX=backend.log
+ExecStart=/home/khoa2807/working-sources/tracuuluadao/target/release/tracuuluadao
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+StandardOutput=journal
+StandardError=journal
+LogsDirectory=tracuuluadao
+
+[Install]
+WantedBy=multi-user.target

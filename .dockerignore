@@ -1,0 +1,17 @@
+target
+.git
+.gitignore
+.claude
+plans
+results.md
+repomix-output.xml
+example.md
+frontend/node_modules
+frontend/.svelte-kit
+frontend/build
+scripts/google-browser-sidecar/node_modules
+scripts/google-browser-sidecar/.cache
+**/__pycache__
+**/*.pyc
+docs
+

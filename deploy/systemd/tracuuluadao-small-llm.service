@@ -1,0 +1,26 @@
+[Unit]
+Description=TraCuuLuaDao small LLM service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=khoa2807
+WorkingDirectory=/
+EnvironmentFile=-/etc/default/tracuuluadao-models
+Environment=LOCAL_MODELS_ROOT=/opt/local-models
+Environment=LLAMA_SERVER_BIN=/opt/llama.cpp/build/bin/llama-server
+Environment=TRACUULUADAO_SMALL_MODEL_PATH=/opt/local-models/models/qwen35-9b-mtp-gguf/Qwen3.5-9B-UD-Q8_K_XL.gguf
+Environment=TRACUULUADAO_SMALL_MODEL_NAME=Qwen3.5-9B-UD-Q8_K_XL.gguf
+Environment=TRACUULUADAO_SMALL_GPU_DEVICE=0
+Environment=TRACUULUADAO_SMALL_PORT=8001
+Environment=TRACUULUADAO_SMALL_CTX_SIZE=262144
+Environment=TRACUULUADAO_SMALL_PARALLEL=8
+ExecStart=/bin/bash -lc 'export GGUF_HOST_LLAMA_SERVER_BIN="${GGUF_HOST_LLAMA_SERVER_BIN:-${LLAMA_SERVER_BIN}}"; export GGUF_HOST_MODEL_PATH="${GGUF_HOST_MODEL_PATH:-${TRACUULUADAO_SMALL_MODEL_PATH}}"; export GGUF_HOST_MODEL_NAME="${GGUF_HOST_MODEL_NAME:-${TRACUULUADAO_SMALL_MODEL_NAME}}"; export GGUF_HOST_GPU_DEVICE="${GGUF_HOST_GPU_DEVICE:-${TRACUULUADAO_SMALL_GPU_DEVICE}}"; export GGUF_HOST_BIND="${GGUF_HOST_BIND:-0.0.0.0}"; export GGUF_HOST_PORT="${GGUF_HOST_PORT:-${TRACUULUADAO_SMALL_PORT}}"; export GGUF_HOST_CTX_SIZE="${GGUF_HOST_CTX_SIZE:-${TRACUULUADAO_SMALL_CTX_SIZE}}"; export GGUF_HOST_PARALLEL="${GGUF_HOST_PARALLEL:-${TRACUULUADAO_SMALL_PARALLEL}}"; export GGUF_HOST_CTX_CHECKPOINTS="${GGUF_HOST_CTX_CHECKPOINTS:-1}"; export GGUF_HOST_KV_UNIFIED="${GGUF_HOST_KV_UNIFIED:-1}"; export GGUF_HOST_FLASH_ATTN="${GGUF_HOST_FLASH_ATTN:-on}"; export GGUF_HOST_NO_MMPROJ_OFFLOAD="${GGUF_HOST_NO_MMPROJ_OFFLOAD:-1}"; export GGUF_HOST_NO_WARMUP="${GGUF_HOST_NO_WARMUP:-1}"; cd "${LOCAL_MODELS_ROOT}" && exec "${LOCAL_MODELS_ROOT}/scripts/gguf/run-gguf-host-llama-server.sh"'
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
