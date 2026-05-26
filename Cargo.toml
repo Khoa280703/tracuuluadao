@@ -9,6 +9,7 @@ tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["rt"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
+clap = { version = "4", features = ["derive", "env"] }
 
 reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "cookies", "socks", "rustls-tls"] }
 rquest = { version = "5.1.0", features = ["full"] }
@@ -40,3 +41,12 @@ thiserror = "2"
 uuid = { version = "1", features = ["serde", "v4"] }
 anyhow = "1"
 redis = { version = "0.27", features = ["tokio-comp"] }
+hex = "0.4"
+
+[[bin]]
+name = "checkscam-crawler"
+path = "src/bin/checkscam_crawler.rs"
+
+[[bin]]
+name = "tinnhiemmang-crawler"
+path = "src/bin/tinnhiemmang_crawler.rs"

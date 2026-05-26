@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Link Detection + Risk Assignment + Summary"
-status: pending
+status: completed
 effort: 1.5h
 depends_on: [phase-03]
 ---
@@ -65,6 +65,8 @@ link_detection_pass()
 
 **Modify:**
 - `src/bin/checkscam_crawler.rs` — implement `link_detection_pass()`, uncomment call in main, add final summary
+- `src/knowledge_base/subjects.rs` — add `get_crawl_evidence_with_mentions()` method
+- `src/knowledge_base/models.rs` — add `EvidenceForLinking` struct
 
 **Read:**
 - `src/knowledge_base/subjects.rs` — `upsert_subject_link`, `get_subject_by_value`
@@ -72,7 +74,7 @@ link_detection_pass()
 
 ## Implementation Steps
 
-### Step 1: Add evidence query struct
+### Step 1: Add evidence query struct and KB method
 
 Add to `checkscam_crawler.rs`:
 
@@ -86,6 +88,43 @@ struct EvidenceForLinking {
 }
 ```
 
+Add to `src/knowledge_base/subjects.rs` (or a new `crawl.rs` module — your choice):
+
+```rust
+use super::models::EvidenceForLinking;
+
+impl KnowledgeBase {
+    /// Fetch all crawled evidence records with non-empty mentioned_subjects.
+    /// Used by the crawler for link detection pass.
+    pub async fn get_crawl_evidence_with_mentions(
+        &self,
+        source: &str,
+    ) -> AppResult<Vec<EvidenceForLinking>> {
+        sqlx::query_as::<_, EvidenceForLinking>(
+            "SELECT id, subject_id, mentioned_subjects
+             FROM evidence
+             WHERE source = $1
+               AND array_length(mentioned_subjects, 1) > 0",
+        )
+        .bind(source)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(Into::into)
+    }
+}
+```
+
+Also add `EvidenceForLinking` to `src/knowledge_base/models.rs`:
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct EvidenceForLinking {
+    pub id: Uuid,
+    pub subject_id: Uuid,
+    pub mentioned_subjects: Vec<String>,
+}
+```
+
 ### Step 2: Implement link detection pass
 
 ```rust
@@ -93,15 +132,11 @@ async fn link_detection_pass(kb: &KnowledgeBase) -> anyhow::Result<LinkStats> {
     tracing::info!("starting link detection pass");
     let mut stats = LinkStats::default();
 
-    // Fetch all crawled evidence with mentioned_subjects
-    let evidence_records = sqlx::query_as::<_, EvidenceForLinking>(
-        "SELECT id, subject_id, mentioned_subjects
-         FROM evidence
-         WHERE source = 'checkscam_crawl'
-           AND array_length(mentioned_subjects, 1) > 0",
-    )
-    .fetch_all(&kb.pool)
-    .await?;
+    // Fetch all crawled evidence with mentioned_subjects (via KB method)
+    let evidence_records = kb
+        .get_crawl_evidence_with_mentions("checkscam_crawl")
+        .await
+        .map_err(|e| anyhow::anyhow!("fetch evidence failed: {e}"))?;
 
     tracing::info!(
         records = evidence_records.len(),
@@ -294,26 +329,27 @@ RUST_LOG=info cargo run --bin checkscam-crawler -- \
 
 ## Todo List
 
-- [ ] Add `EvidenceForLinking` struct
-- [ ] Implement `link_detection_pass()` — query evidence, resolve mentions, create links
-- [ ] Implement `infer_subject_type()` helper
-- [ ] Add `LinkStats` struct
-- [ ] Uncomment and wire `link_detection_pass()` in `main()`
-- [ ] Update summary output (structured log + human-readable stdout)
-- [ ] Add `--skip-links` CLI flag
-- [ ] `cargo check --bin checkscam-crawler`
-- [ ] End-to-end test: `--max-pages 1` creates subjects, evidence, media, links
-- [ ] Verify resume mode: re-run skips existing posts
-- [ ] Verify DB data integrity with psql queries
+- [x] Add `EvidenceForLinking` struct to `models.rs`
+- [x] Add `get_crawl_evidence_with_mentions()` method to `KnowledgeBase` in `subjects.rs`
+- [x] Implement `link_detection_pass()` — query evidence via KB method, resolve mentions, create links
+- [x] Implement `infer_subject_type()` helper
+- [x] Add `LinkStats` struct
+- [x] Uncomment and wire `link_detection_pass()` in `main()`
+- [x] Update summary output (structured log + human-readable stdout)
+- [x] Add `--skip-links` CLI flag
+- [x] `cargo check --bin checkscam-crawler`
+- [x] End-to-end test: `--max-pages 1` creates subjects, evidence, media, links
+- [x] Verify resume mode: re-run skips existing posts
+- [x] Verify DB data integrity with psql queries
 
 ## Success Criteria
 
-- `subject_links` created between co-mentioned entities from same post
-- Risk scores recalculated for all subjects touched by crawl
-- `--skip-links` flag works for faster test iterations
-- Re-running crawler is idempotent — no duplicate subjects, evidence, or links (strength increases on links)
-- Human-readable summary printed to stdout
-- `cargo check` passes for both binaries
+- [x] `subject_links` created between co-mentioned entities from same post
+- [x] Risk scores recalculated for all subjects touched by crawl
+- [x] `--skip-links` flag works for faster test iterations
+- [x] Re-running crawler is idempotent — no duplicate subjects, evidence, or links (strength increases on links)
+- [x] Human-readable summary printed to stdout
+- [x] `cargo check` passes for both binaries
 
 ## Risk Assessment
 

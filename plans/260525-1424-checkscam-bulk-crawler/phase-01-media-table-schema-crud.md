@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Media Table Schema + CRUD Service"
-status: pending
+status: completed
 effort: 1.5h
 ---
 
@@ -228,17 +228,17 @@ cargo check
 
 ## Todo List
 
-- [ ] Add `MediaRecord` struct to `models.rs`
-- [ ] Add media table DDL + indexes to `schema.rs` `ensure_schema()`
-- [ ] Create `src/knowledge_base/media.rs` with CRUD methods
-- [ ] Register `mod media` in `mod.rs`, add re-export
-- [ ] `cargo check` — verify compilation
+- [x] Add `MediaRecord` struct to `models.rs`
+- [x] Add media table DDL + indexes to `schema.rs` `ensure_schema()`
+- [x] Create `src/knowledge_base/media.rs` with CRUD methods
+- [x] Register `mod media` in `mod.rs`, add re-export
+- [x] `cargo check` — verify compilation
 
 ## Success Criteria
 
-- `cargo check` passes with no errors
-- `ensure_schema()` creates `media` table + indexes on fresh DB
-- `insert_media`, `insert_media_batch`, `media_exists_by_url`, `get_media_for_entity` compile and have correct SQL
+- [x] `cargo check` passes with no errors
+- [x] `ensure_schema()` creates `media` table + indexes on fresh DB
+- [x] `insert_media`, `insert_media_batch`, `media_exists_by_url`, `get_media_for_entity` compile and have correct SQL
 
 ## Risk Assessment
 

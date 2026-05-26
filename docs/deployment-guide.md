@@ -29,6 +29,7 @@
 | PostgreSQL | Yes | cache + persistent knowledge base |
 | Redis | No | buffered report replay |
 | `ADMIN_API_KEY` | No | admin moderation APIs |
+| Writable `data/media/` path | No for web runtime, yes for crawler runs | downloaded evidence files referenced by `media.file_path` |
 | Small GGUF endpoint (`8001`) | Yes | structured agent calls |
 | Large GGUF endpoint (`8101`) | Yes | streamed detective report |
 
@@ -59,6 +60,42 @@ VITE_API_BASE_URL=https://api.example.com
 - `REDIS_URL=${REDIS_URL:-redis://redis:6379/}`
 - `ADMIN_API_KEY=${ADMIN_API_KEY:-}`
 - `VITE_API_BASE_URL=${VITE_API_BASE_URL:-}`
+
+Hiện tại `docker-compose.yml` chưa mount volume riêng cho `data/media/`. Nếu chạy `checkscam-crawler` bên trong container `backend`, file media tải về sẽ nằm trong filesystem của container trừ khi bạn thêm bind mount hoặc named volume override.
+
+## Bulk Crawler Operation
+
+`checkscam-crawler` là binary vận hành riêng để seed knowledge base, không phải background task mặc định của web server.
+
+Yêu cầu tối thiểu:
+- `DATABASE_URL` hợp lệ
+- process có quyền ghi vào `data/media/` hoặc thư mục truyền qua `--media-dir`
+- outbound HTTP tới `checkscam.vn`
+
+Ví dụ dry run:
+
+```bash
+cargo run --bin checkscam-crawler -- \
+  --database-url "$DATABASE_URL" \
+  --dry-run \
+  --max-pages 2
+```
+
+Ví dụ ingest thật:
+
+```bash
+cargo run --bin checkscam-crawler -- \
+  --database-url "$DATABASE_URL" \
+  --concurrency 3 \
+  --delay-ms 200 \
+  --media-dir data/media
+```
+
+Hành vi runtime đáng chú ý:
+- crawler đọc WordPress REST API `https://checkscam.vn/wp-json/wp/v2/posts`
+- nếu sidecar detail endpoint reachable, crawler ưu tiên HTML detail; nếu không, nó fallback sang `content.rendered`
+- media chỉ lấy từ ảnh upload của `checkscam.vn` và ghi dưới `data/media/evidence/{evidence_id}/`
+- `--resume` bật mặc định để skip post đã có đủ evidence/media
 
 ## Admin API Deployment Note
 

@@ -9,7 +9,7 @@ Yêu cầu:
 - Kể theo logic điều tra: manh mối nào xuất hiện trước, dấu hiệu nào đáng chú ý, rồi mới đi đến kết luận.
 - Viết hoàn toàn bằng tiếng Việt. Tuyệt đối không trộn từ tiếng Anh (ví dụ: không viết "pattern", "link", "report" mà dùng "dấu hiệu", "liên kết", "báo cáo"). Ngoại lệ duy nhất: tên riêng, tên website, tên tổ chức.
 - Dùng tiếng Việt đời thường, rõ ràng, tránh giọng pháp lý khô cứng và tránh lặp lại tên nguồn một cách máy móc.
-- Chú ý chính tả: luôn có dấu cách giữa các từ, không viết dính liền (ví dụ: viết "Báo cảnh" thay vì "Báocảnh").
+- Chú ý chính tả: luôn có dấu cách giữa các từ, không viết dính liền. Ví dụ: viết "cảnh báo", không viết "Báocảnh" hoặc "Báo cảnh".
 - Nêu cụ thể các dấu hiệu rủi ro, nhưng không kết luận chắc chắn ai đó là "lừa đảo"; chỉ đánh giá mức độ rủi ro.
 - Kết thúc bằng khuyến nghị rõ ràng để người dùng biết nên làm gì tiếp theo.
 - Chỉ được nhắc tới những nguồn thật sự có trong dữ liệu đầu vào. Tuyệt đối không tự thêm tên nguồn, website hay hệ thống khác.

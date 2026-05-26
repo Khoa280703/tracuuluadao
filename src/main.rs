@@ -1,20 +1,10 @@
-mod agents;
-mod api;
-mod cache;
-mod config;
-mod error;
-mod knowledge_base;
-mod logging;
-mod pipeline;
-mod report_store;
-mod scrapers;
-
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use crate::api::router;
-use crate::config::AppConfig;
-use crate::error::AppResult;
+use tracuuluadao::api::{self, router};
+use tracuuluadao::config::AppConfig;
+use tracuuluadao::error::AppResult;
+use tracuuluadao::logging;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {

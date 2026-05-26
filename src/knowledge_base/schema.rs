@@ -85,6 +85,34 @@ impl KnowledgeBase {
         )
         .execute(&self.pool)
         .await?;
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS media (
+                id UUID PRIMARY KEY,
+                entity_type TEXT NOT NULL,
+                entity_id UUID NOT NULL,
+                file_path TEXT NOT NULL,
+                original_url TEXT,
+                content_type TEXT,
+                file_size_bytes BIGINT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )",
+        )
+        .execute(&self.pool)
+        .await?;
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS crawl_failures (
+                id UUID PRIMARY KEY,
+                url TEXT NOT NULL,
+                error_phase TEXT NOT NULL,
+                error_message TEXT,
+                retry_count INT NOT NULL DEFAULT 0,
+                resolved BOOLEAN NOT NULL DEFAULT FALSE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )",
+        )
+        .execute(&self.pool)
+        .await?;
 
         for statement in [
             "CREATE INDEX IF NOT EXISTS idx_subject_lookup ON subjects(value, subject_type)",
@@ -98,6 +126,9 @@ impl KnowledgeBase {
             "CREATE INDEX IF NOT EXISTS idx_reports_status ON user_reports(status, created_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_reports_subject ON user_reports(subject_id, created_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_reports_ip_hash ON user_reports(reporter_ip_hash, created_at DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_media_entity ON media(entity_type, entity_id)",
+            "CREATE INDEX IF NOT EXISTS idx_media_original_url ON media(original_url) WHERE original_url IS NOT NULL",
+            "CREATE INDEX IF NOT EXISTS idx_crawl_failures_unresolved ON crawl_failures(resolved, retry_count) WHERE resolved = false",
         ] {
             sqlx::query(statement).execute(&self.pool).await?;
         }

@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Detail Parsing + Image Download + DB Insert"
-status: pending
+status: completed
 effort: 3h
 depends_on: [phase-01, phase-02]
 ---
@@ -131,6 +131,61 @@ struct ExtractedEntities {
     source_url: String,
     title: String,
     date: Option<String>,
+}
+```
+
+### Step 1a: Add KnowledgeBase helper methods (in `src/knowledge_base/subjects.rs`)
+
+The binary cannot access `kb.pool` (it's `pub(crate)` and the binary is a separate crate via lib.rs). Add these methods to `KnowledgeBase`:
+
+```rust
+// Add to impl KnowledgeBase in src/knowledge_base/subjects.rs
+
+/// Check if crawled evidence exists for a specific source URL.
+/// Used by the crawler binary for resume support.
+pub async fn evidence_exists_for_source_url(
+    &self,
+    source: &str,
+    source_url: &str,
+) -> AppResult<bool> {
+    let exists = sqlx::query_scalar::<_, bool>(
+        "SELECT EXISTS(
+            SELECT 1 FROM evidence
+            WHERE source = $1
+              AND data->>'source_url' = $2
+        )",
+    )
+    .bind(source)
+    .bind(source_url)
+    .fetch_one(&self.pool)
+    .await?;
+    Ok(exists)
+}
+
+/// Set initial risk score for a subject from crawl data.
+/// Only upgrades risk — never downgrades an existing higher score.
+pub async fn set_crawl_risk(
+    &self,
+    subject_id: Uuid,
+    risk_score: f32,
+    risk_level: &str,
+) -> AppResult<()> {
+    sqlx::query(
+        "UPDATE subjects
+         SET risk_score = GREATEST(risk_score, $2),
+             risk_level = CASE
+                 WHEN risk_score < $2 THEN $3
+                 ELSE risk_level
+             END,
+             last_seen_at = NOW()
+         WHERE id = $1",
+    )
+    .bind(subject_id)
+    .bind(risk_score)
+    .bind(risk_level)
+    .execute(&self.pool)
+    .await?;
+    Ok(())
 }
 ```
 
@@ -369,7 +424,10 @@ async fn process_posts(
 
         // Resume check: skip if already processed
         if args.resume {
-            let exists = evidence_exists_for_url(kb, &post.link).await;
+            let exists = kb
+                .evidence_exists_for_source_url("checkscam_crawl", &post.link)
+                .await
+                .unwrap_or(false);
             if exists {
                 stats.skipped_existing += 1;
                 if idx % 100 == 0 {
@@ -519,8 +577,8 @@ async fn process_posts(
             // Set initial risk based on report_count (Phase 4 refines this)
             if let Some(count) = entities.report_count {
                 let (risk_level, risk_score) = initial_risk_from_report_count(count);
-                if let Err(e) = set_initial_risk(kb, subject_id, risk_level, risk_score).await {
-                    tracing::warn!(subject_id = %subject_id, error = %e, "set_initial_risk failed");
+                if let Err(e) = kb.set_crawl_risk(subject_id, risk_score, risk_level).await {
+                    tracing::warn!(subject_id = %subject_id, error = %e, "set_crawl_risk failed");
                 }
             }
         }
@@ -534,22 +592,6 @@ async fn process_posts(
     Ok(stats)
 }
 
-async fn evidence_exists_for_url(kb: &KnowledgeBase, url: &str) -> bool {
-    // Query evidence table for existing crawl data with this source URL
-    let result = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(
-            SELECT 1 FROM evidence
-            WHERE source = 'checkscam_crawl'
-              AND data->>'source_url' = $1
-        )",
-    )
-    .bind(url)
-    .fetch_one(&kb.pool)
-    .await;
-
-    result.unwrap_or(false)
-}
-
 fn initial_risk_from_report_count(count: u32) -> (&'static str, f32) {
     match count {
         0..=2 => ("medium", 0.5),
@@ -557,32 +599,9 @@ fn initial_risk_from_report_count(count: u32) -> (&'static str, f32) {
         _ => ("critical", 0.9),
     }
 }
-
-async fn set_initial_risk(
-    kb: &KnowledgeBase,
-    subject_id: Uuid,
-    risk_level: &str,
-    risk_score: f32,
-) -> anyhow::Result<()> {
-    // Only set risk if current risk is unknown/lower (don't downgrade)
-    sqlx::query(
-        "UPDATE subjects
-         SET risk_score = GREATEST(risk_score, $2),
-             risk_level = CASE
-                 WHEN risk_score < $2 THEN $3
-                 ELSE risk_level
-             END,
-             last_seen_at = NOW()
-         WHERE id = $1",
-    )
-    .bind(subject_id)
-    .bind(risk_score)
-    .bind(risk_level)
-    .execute(&kb.pool)
-    .await?;
-    Ok(())
-}
 ```
+
+Note: `evidence_exists_for_url()` and `set_initial_risk()` from the original design are replaced by proper `KnowledgeBase` methods (`evidence_exists_for_source_url`, `set_crawl_risk`) added in Step 1a. This avoids direct `kb.pool` access from the binary (which is a separate crate via lib.rs).
 
 ### Step 7: Add missing dependencies to Cargo.toml
 
@@ -603,34 +622,34 @@ RUST_LOG=info cargo run --bin checkscam-crawler -- \
 
 ## Todo List
 
-- [ ] Add `ExtractedEntities` struct and helper types
-- [ ] Implement `check_sidecar_available()`
-- [ ] Implement `fetch_detail_html()` with sidecar + REST fallback
-- [ ] Implement `extract_entities()` with regex extraction from HTML
-- [ ] Implement `download_image()` with SHA256 hash naming
-- [ ] Implement full `process_posts()` — upsert subjects, insert evidence, insert media
-- [ ] Implement `evidence_exists_for_url()` for resume support
-- [ ] Implement `initial_risk_from_report_count()` and `set_initial_risk()`
-- [ ] Add `hex` dependency to Cargo.toml
-- [ ] `cargo check --bin checkscam-crawler`
-- [ ] Manual test: `--max-pages 1` processes posts, creates subjects + evidence + media
+- [x] Add `ExtractedEntities` struct and helper types to crawler binary
+- [x] Add `evidence_exists_for_source_url()` and `set_crawl_risk()` methods to `KnowledgeBase` in `subjects.rs`
+- [x] Implement `check_sidecar_available()`
+- [x] Implement `fetch_detail_html()` with sidecar + REST fallback
+- [x] Implement `extract_entities()` with regex extraction from HTML
+- [x] Implement `download_image()` with SHA256 hash naming
+- [x] Implement full `process_posts()` — upsert subjects, insert evidence, insert media
+- [x] Implement `initial_risk_from_report_count()` helper
+- [x] Add `hex` dependency to Cargo.toml
+- [x] `cargo check --bin checkscam-crawler`
+- [x] Manual test: `--max-pages 1` processes posts, creates subjects + evidence + media
 
 ## Success Criteria
 
-- Crawler processes posts end-to-end: fetch → parse → extract → download → DB insert
-- Subjects created with correct types (phone/bank)
-- Evidence records have `source="checkscam_crawl"`, `evidence_type="external_report"`, `investigation_id=NULL`
-- Images downloaded to `data/media/evidence/{subject_id}/` with SHA256 naming
-- Media records reference correct entity and file paths
-- Resume mode skips already-processed posts
-- No panics on malformed posts — errors logged and skipped
+- [x] Crawler processes posts end-to-end: fetch → parse → extract → download → DB insert
+- [x] Subjects created with correct types (phone/bank)
+- [x] Evidence records have `source="checkscam_crawl"`, `evidence_type="external_report"`, `investigation_id=NULL`
+- [x] Images downloaded to `data/media/evidence/{subject_id}/` with SHA256 naming
+- [x] Media records reference correct entity and file paths
+- [x] Resume mode skips already-processed posts
+- [x] No panics on malformed posts — errors logged and skipped
 
 ## Risk Assessment
 
 - **Regex extraction accuracy:** Reusing proven patterns from existing scraper. Edge cases (unusual formatting) may miss some entities — acceptable for bulk seed data.
 - **Image download failures:** Common (404, timeout). Logged and skipped — non-fatal.
 - **Large post volume:** Thousands of posts with 3 concurrent fetches + 200ms delay = hours of runtime. Expected and acceptable for one-time seed crawl.
-- **Pool field access:** `evidence_exists_for_url` and `set_initial_risk` access `kb.pool` directly. This field is `pub(crate)` — the binary is in the same crate, so this works. If it becomes an issue, add methods to KnowledgeBase.
+- **Pool field access:** `evidence_exists_for_url` and `set_initial_risk` in the original plan accessed `kb.pool` directly. This field is `pub(crate)` and the binary is a **separate crate** (via lib.rs). **Fix:** add these as proper methods on `KnowledgeBase` in `src/knowledge_base/subjects.rs` (see Step 1a below). This maintains encapsulation and avoids the visibility issue.
 
 ## Security Considerations
 

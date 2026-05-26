@@ -1,3 +1,5 @@
+mod crawl_failures;
+mod media;
 mod reports;
 mod risk;
 mod schema;
@@ -12,9 +14,10 @@ use sqlx::PgPool;
 use tokio::time::MissedTickBehavior;
 
 pub use models::{
-    EvidenceInput, HistoricalContextSnapshot, NetworkGraph, SubjectHistory, UserReportWithSubject,
+    EvidenceForLinking, EvidenceInput, HistoricalContextSnapshot, MediaRecord, NetworkGraph,
+    SubjectHistory, UserReportWithSubject,
 };
-pub use risk::{compute_quality_score, risk_level_to_numeric};
+pub use risk::{compute_quality_score, numeric_to_risk_level, risk_level_to_numeric};
 
 #[derive(Debug, Clone)]
 pub struct KnowledgeBase {

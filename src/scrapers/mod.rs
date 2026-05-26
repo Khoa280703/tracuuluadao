@@ -1,3 +1,4 @@
+pub mod admin_vn;
 pub mod checkscam;
 pub mod chongluadao;
 pub mod duckduckgo;
@@ -25,6 +26,7 @@ const GOOGLE_SCRAPER_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum SourceName {
+    AdminVN,
     CheckScam,
     ChongLuaDao,
     TrangTrang,
@@ -36,6 +38,7 @@ pub enum SourceName {
 impl SourceName {
     pub fn display_name(&self) -> &'static str {
         match self {
+            Self::AdminVN => "Admin.vn",
             Self::CheckScam => "CheckScam.vn",
             Self::ChongLuaDao => "ChongLuaDao.vn",
             Self::TrangTrang => "TrangTrang",
@@ -144,6 +147,12 @@ pub async fn run_all_scrapers(
         query_type,
         QueryType::Phone | QueryType::Bank | QueryType::Url
     ) {
+        emit_starting(SourceName::AdminVN);
+        tasks.push(Box::pin(run_with_timeout(
+            SourceName::AdminVN,
+            query,
+            admin_vn::scrape(factory.standard_client().ok(), query),
+        )));
         emit_starting(SourceName::CheckScam);
         tasks.push(Box::pin(run_with_timeout(
             SourceName::CheckScam,

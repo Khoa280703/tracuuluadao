@@ -145,6 +145,17 @@ impl HttpClient {
     pub async fn get_text_from_url(&self, url: Url) -> Result<String> {
         Ok(self.inner.get(url).send().await?.text().await?)
     }
+
+    pub async fn get_bytes(&self, url: &str) -> Result<(Vec<u8>, Option<String>)> {
+        let response = self.inner.get(url).send().await?;
+        let content_type = response
+            .headers()
+            .get(rquest::header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .map(|v| v.to_string());
+        let bytes = response.bytes().await?;
+        Ok((bytes.to_vec(), content_type))
+    }
 }
 
 /// Detects Cloudflare block pages (403 challenge, JS challenge, CAPTCHA, Turnstile).

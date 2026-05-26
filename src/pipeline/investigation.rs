@@ -1724,7 +1724,10 @@ async fn replay_cached_result(
     for result in &cached.scraped_results {
         let found_count = effective_source_found_count(result);
         let message = if !result.success {
-            format!("Không lấy được dữ liệu từ {}.", result.source.display_name())
+            format!(
+                "Không lấy được dữ liệu từ {}.",
+                result.source.display_name()
+            )
         } else if found_count > 0 {
             format!("Tìm thấy {} kết quả liên quan.", found_count)
         } else {
@@ -1837,12 +1840,12 @@ fn build_detective_fallback(
         .iter()
         .map(|item| effective_source_found_count(item))
         .sum();
-    let has_dedicated_scam_reports = scraped_results
-        .iter()
-        .any(|item| {
-            matches!(item.source, SourceName::CheckScam | SourceName::ChongLuaDao)
-                && effective_source_found_count(item) > 0
-        });
+    let has_dedicated_scam_reports = scraped_results.iter().any(|item| {
+        matches!(
+            item.source,
+            SourceName::AdminVN | SourceName::CheckScam | SourceName::ChongLuaDao
+        ) && effective_source_found_count(item) > 0
+    });
     let risk_level = if total_reports >= 8 || (has_dedicated_scam_reports && total_reports >= 3) {
         "high"
     } else if risk_signal_count >= 4 || total_reports >= 5 {

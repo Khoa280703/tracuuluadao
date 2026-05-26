@@ -5,8 +5,9 @@ use crate::error::{AppError, AppResult};
 
 use super::KnowledgeBase;
 use super::models::{
-    EvidenceInput, HistoricalContextSnapshot, InvestigationRecord, LinkedSubject, NetworkEdge,
-    NetworkGraph, NetworkNode, Subject, SubjectHistory, UserReportRecord,
+    EvidenceForLinking, EvidenceInput, HistoricalContextSnapshot, InvestigationRecord,
+    LinkedSubject, NetworkEdge, NetworkGraph, NetworkNode, Subject, SubjectHistory,
+    UserReportRecord,
 };
 
 impl KnowledgeBase {
@@ -90,25 +91,170 @@ impl KnowledgeBase {
         Ok(investigation_id)
     }
 
+    pub async fn insert_evidence(&self, item: EvidenceInput) -> AppResult<Uuid> {
+        let evidence_id = Uuid::new_v4();
+        sqlx::query(
+            "INSERT INTO evidence (
+                id, subject_id, investigation_id, source, evidence_type,
+                data, risk_signals, mentioned_subjects
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+        )
+        .bind(evidence_id)
+        .bind(item.subject_id)
+        .bind(item.investigation_id)
+        .bind(item.source)
+        .bind(item.evidence_type)
+        .bind(item.data)
+        .bind(item.risk_signals)
+        .bind(item.mentioned_subjects)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(evidence_id)
+    }
+
+    pub async fn update_evidence(&self, evidence_id: Uuid, item: EvidenceInput) -> AppResult<()> {
+        sqlx::query(
+            "UPDATE evidence
+             SET investigation_id = $2,
+                 source = $3,
+                 evidence_type = $4,
+                 data = $5,
+                 risk_signals = $6,
+                 mentioned_subjects = $7
+             WHERE id = $1",
+        )
+        .bind(evidence_id)
+        .bind(item.investigation_id)
+        .bind(item.source)
+        .bind(item.evidence_type)
+        .bind(item.data)
+        .bind(item.risk_signals)
+        .bind(item.mentioned_subjects)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn insert_evidence_batch(&self, items: Vec<EvidenceInput>) -> AppResult<()> {
         for item in items {
-            sqlx::query(
-                "INSERT INTO evidence (
-                    id, subject_id, investigation_id, source, evidence_type,
-                    data, risk_signals, mentioned_subjects
-                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-            )
-            .bind(Uuid::new_v4())
-            .bind(item.subject_id)
-            .bind(item.investigation_id)
-            .bind(item.source)
-            .bind(item.evidence_type)
-            .bind(item.data)
-            .bind(item.risk_signals)
-            .bind(item.mentioned_subjects)
-            .execute(&self.pool)
-            .await?;
+            self.insert_evidence(item).await?;
         }
+        Ok(())
+    }
+
+    pub async fn count_evidence_for_source_url(
+        &self,
+        source: &str,
+        source_url: &str,
+    ) -> AppResult<i64> {
+        let count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*)
+             FROM evidence
+             WHERE source = $1
+               AND data->>'source_url' = $2",
+        )
+        .bind(source)
+        .bind(source_url)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(count)
+    }
+
+    pub async fn count_media_for_source_url(
+        &self,
+        source: &str,
+        source_url: &str,
+    ) -> AppResult<i64> {
+        let count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*)
+             FROM media m
+             JOIN evidence e ON e.id = m.entity_id
+             WHERE m.entity_type = 'evidence'
+               AND e.source = $1
+               AND e.data->>'source_url' = $2",
+        )
+        .bind(source)
+        .bind(source_url)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(count)
+    }
+
+    pub async fn get_evidence_id_for_subject_source_url(
+        &self,
+        subject_id: Uuid,
+        source: &str,
+        source_url: &str,
+    ) -> AppResult<Option<Uuid>> {
+        sqlx::query_scalar::<_, Uuid>(
+            "SELECT id
+             FROM evidence
+             WHERE subject_id = $1
+               AND source = $2
+               AND data->>'source_url' = $3
+             ORDER BY created_at ASC
+             LIMIT 1",
+        )
+        .bind(subject_id)
+        .bind(source)
+        .bind(source_url)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(Into::into)
+    }
+
+    pub async fn get_evidence_id_for_subject_source_url_and_fake_type(
+        &self,
+        subject_id: Uuid,
+        source: &str,
+        source_url: &str,
+        fake_type: &str,
+    ) -> AppResult<Option<Uuid>> {
+        sqlx::query_scalar::<_, Uuid>(
+            "SELECT id
+             FROM evidence
+             WHERE subject_id = $1
+               AND source = $2
+               AND data->>'source_url' = $3
+               AND data->>'fake_type' = $4
+             ORDER BY created_at ASC
+             LIMIT 1",
+        )
+        .bind(subject_id)
+        .bind(source)
+        .bind(source_url)
+        .bind(fake_type)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(Into::into)
+    }
+
+    pub async fn set_crawl_risk(
+        &self,
+        subject_id: Uuid,
+        risk_score: f32,
+        risk_level: &str,
+    ) -> AppResult<()> {
+        sqlx::query(
+            "UPDATE subjects
+             SET risk_score = GREATEST(risk_score, $2),
+                 risk_level = CASE
+                    WHEN risk_score < $2 THEN $3
+                    ELSE risk_level
+                 END,
+                 last_seen_at = NOW()
+             WHERE id = $1",
+        )
+        .bind(subject_id)
+        .bind(risk_score)
+        .bind(risk_level)
+        .execute(&self.pool)
+        .await?;
+
         Ok(())
     }
 
@@ -131,7 +277,11 @@ impl KnowledgeBase {
                 id, subject_a_id, subject_b_id, link_type, strength, evidence_ids
              ) VALUES ($1, $2, $3, $4, 1, $5)
              ON CONFLICT(subject_a_id, subject_b_id, link_type) DO UPDATE
-             SET strength = subject_links.strength + 1,
+             SET strength = CASE
+                    WHEN cardinality(EXCLUDED.evidence_ids) = 0 THEN subject_links.strength
+                    WHEN subject_links.evidence_ids @> EXCLUDED.evidence_ids THEN subject_links.strength
+                    ELSE subject_links.strength + 1
+                 END,
                  evidence_ids = (
                     SELECT ARRAY(
                         SELECT DISTINCT unnest(subject_links.evidence_ids || EXCLUDED.evidence_ids)
@@ -257,6 +407,47 @@ impl KnowledgeBase {
             linked_subjects,
             all_risk_signals,
         })
+    }
+
+    pub async fn get_crawl_evidence_with_mentions(
+        &self,
+        source: &str,
+    ) -> AppResult<Vec<EvidenceForLinking>> {
+        query_as::<_, EvidenceForLinking>(
+            "SELECT id, subject_id, mentioned_subjects
+             FROM evidence
+             WHERE source = $1
+               AND array_length(mentioned_subjects, 1) > 0",
+        )
+        .bind(source)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(Into::into)
+    }
+
+    pub async fn get_crawl_risk_floor(
+        &self,
+        subject_id: Uuid,
+        source: &str,
+    ) -> AppResult<Option<f32>> {
+        let max_report_count = sqlx::query_scalar::<_, Option<i32>>(
+            "SELECT MAX(COALESCE(NULLIF(data->>'report_count', '')::INT, 0))
+             FROM evidence
+             WHERE subject_id = $1
+               AND source = $2",
+        )
+        .bind(subject_id)
+        .bind(source)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(max_report_count.map(|count| match count {
+            10.. => 0.9,
+            5..=9 => 0.75,
+            2..=4 => 0.55,
+            1 => 0.35,
+            _ => 0.2,
+        }))
     }
 
     pub async fn get_network(&self, subject_id: Uuid, max_depth: i32) -> AppResult<NetworkGraph> {

@@ -32,7 +32,7 @@ const CHECKSCAM_REST_PAGE_SIZE: usize = 100;
 const CHECKSCAM_REST_MAX_PAGES: usize = 4;
 const CHECKSCAM_DETAIL_CONCURRENCY: usize = 4;
 const CHECKSCAM_REST_CONCURRENCY: usize = 6;
-const SIDECAR_BASE_URL: &str = "http://127.0.0.1:4417";
+pub const SIDECAR_BASE_URL: &str = "http://127.0.0.1:4417";
 
 #[derive(Debug, Deserialize)]
 struct RestRenderedText {
@@ -481,7 +481,7 @@ fn detail_matches_query(report: &ScrapedReport, query: &str) -> bool {
         || report.content.to_lowercase().contains(&needle)
 }
 
-fn parse_detail_report(url: &str, fallback_title: &str, html: &str) -> ScrapedReport {
+pub fn parse_detail_report(url: &str, fallback_title: &str, html: &str) -> ScrapedReport {
     let document = Html::parse_document(html);
     let title_selector = Selector::parse("h1, h2").expect("valid selector");
     let history_selector =
@@ -497,6 +497,7 @@ fn parse_detail_report(url: &str, fallback_title: &str, html: &str) -> ScrapedRe
     )
     .expect("valid regex");
     let owner_regex = Regex::new(r"Chủ tk:\s*(.*?)\s*STK:").expect("valid owner regex");
+    let phone_regex = Regex::new(r"SĐT:\s*([0-9 .-]{9,16})").expect("valid phone regex");
     let account_regex = Regex::new(r"STK:\s*([0-9*]{6,})").expect("valid account regex");
     let bank_regex =
         Regex::new(r"Ngân hàng:\s*(.*?)\s*(?:Hạng mục:|Ảnh chụp bằng chứng:|Nội dung cảnh báo:)")
@@ -524,6 +525,18 @@ fn parse_detail_report(url: &str, fallback_title: &str, html: &str) -> ScrapedRe
                 .captures(&collapsed_text)
                 .and_then(|captures| captures.get(1))
                 .map(|value| value.as_str().trim().trim_matches('.').to_owned())
+                .filter(|value| !value.is_empty())
+        });
+    let phone = quick_summary
+        .as_ref()
+        .and_then(|captures| captures.get(2))
+        .map(|value| value.as_str().trim().to_owned())
+        .filter(|value| !value.is_empty())
+        .or_else(|| {
+            phone_regex
+                .captures(&collapsed_text)
+                .and_then(|captures| captures.get(1))
+                .map(|value| value.as_str().trim().to_owned())
                 .filter(|value| !value.is_empty())
         });
     let account = quick_summary
@@ -590,6 +603,9 @@ fn parse_detail_report(url: &str, fallback_title: &str, html: &str) -> ScrapedRe
     let mut content_parts = Vec::new();
     if let Some(owner) = owner {
         content_parts.push(format!("Chủ tài khoản: {owner}"));
+    }
+    if let Some(phone) = phone {
+        content_parts.push(format!("Số điện thoại: {phone}"));
     }
     if let Some(account) = account {
         content_parts.push(format!("Số tài khoản: {account}"));

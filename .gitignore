@@ -33,3 +33,6 @@ node_modules/
 # Runtime logs
 logs/
 **/logs/
+
+# Generated/runtime data
+data/

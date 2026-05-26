@@ -83,6 +83,25 @@ pub struct EvidenceInput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct MediaRecord {
+    pub id: Uuid,
+    pub entity_type: String,
+    pub entity_id: Uuid,
+    pub file_path: String,
+    pub original_url: Option<String>,
+    pub content_type: Option<String>,
+    pub file_size_bytes: Option<i64>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct EvidenceForLinking {
+    pub id: Uuid,
+    pub subject_id: Uuid,
+    pub mentioned_subjects: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct NetworkNode {
     pub id: Uuid,
     pub value: String,

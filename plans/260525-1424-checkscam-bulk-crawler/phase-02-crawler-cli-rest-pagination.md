@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Crawler CLI Binary + REST API Pagination"
-status: pending
+status: completed
 effort: 3h
 depends_on: [phase-01]
 ---
@@ -145,6 +145,8 @@ async fn main() -> AppResult<()> {
 ```
 
 **Note:** Some modules may have `pub(crate)` visibility that needs to become `pub`. Check each module and adjust visibility as needed during implementation. Only the modules/items actually used by the crawler binary need `pub` — the rest can stay `pub(crate)`.
+
+**Critical visibility fix:** `KnowledgeBase.pool` is `pub(crate)` in `src/knowledge_base/mod.rs`. The binary (separate crate) **cannot** access `pub(crate)` items. Do NOT change `pool` to `pub`. Instead, add dedicated methods to `KnowledgeBase` in Phase 3 (e.g., `evidence_exists_for_url`, `set_crawl_risk`) that encapsulate pool access. This keeps the pool private and maintains proper encapsulation.
 
 ### Step 2: Add clap dependency and `[[bin]]` to Cargo.toml
 
@@ -400,21 +402,21 @@ RUST_LOG=info cargo run --bin checkscam-crawler -- --dry-run --max-pages 2 --dat
 
 ## Todo List
 
-- [ ] Create `src/lib.rs` with module re-exports
-- [ ] Update `src/main.rs` to use library imports instead of `mod` declarations
-- [ ] Add `clap` to `[dependencies]` in Cargo.toml
-- [ ] Add `[[bin]]` entry for `checkscam-crawler` in Cargo.toml
-- [ ] Make `parse_detail_report` and `SIDECAR_BASE_URL` pub in checkscam.rs
-- [ ] Create `src/bin/checkscam_crawler.rs` with CLI args + REST pagination
-- [ ] `cargo check` — both binaries compile
-- [ ] Manual test: `--dry-run --max-pages 2` successfully paginates
+- [x] Create `src/lib.rs` with module re-exports
+- [x] Update `src/main.rs` to use library imports instead of `mod` declarations
+- [x] Add `clap` to `[dependencies]` in Cargo.toml
+- [x] Add `[[bin]]` entry for `checkscam-crawler` in Cargo.toml
+- [x] Make `parse_detail_report` and `SIDECAR_BASE_URL` pub in checkscam.rs
+- [x] Create `src/bin/checkscam_crawler.rs` with CLI args + REST pagination
+- [x] `cargo check` — both binaries compile
+- [x] Manual test: `--dry-run --max-pages 2` successfully paginates
 
 ## Success Criteria
 
-- `cargo check --bin checkscam-crawler` compiles
-- `cargo check` (default binary) still compiles
-- Dry-run mode paginates REST API and logs post URLs without DB writes
-- CLI args (--max-pages, --concurrency, --delay-ms, --dry-run, --resume) work correctly
+- [x] `cargo check --bin checkscam-crawler` compiles
+- [x] `cargo check` (default binary) still compiles
+- [x] Dry-run mode paginates REST API and logs post URLs without DB writes
+- [x] CLI args (--max-pages, --concurrency, --delay-ms, --dry-run, --resume) work correctly
 
 ## Risk Assessment
 

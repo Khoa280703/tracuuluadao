@@ -1,6 +1,6 @@
 # Project Overview & PDR (Product Development Requirements)
 
-> Last updated: 2026-05-24
+> Last updated: 2026-05-25
 
 ## Project Purpose
 
@@ -56,6 +56,8 @@ Vietnamese users face increasing online fraud via phone scams, fake bank account
 | FR-27 | Community report submission API with anonymous rate limiting and duplicate protection | Implemented |
 | FR-28 | Admin moderation APIs to list, approve, and reject community reports | Implemented |
 | FR-29 | Frontend: show historical context, linked subjects, and community report submission UI | Implemented |
+| FR-30 | Bulk-ingest CheckScam historical posts into the persistent knowledge base via a standalone crawler binary | Implemented |
+| FR-31 | Persist downloaded crawl images as reusable media records linked to evidence rows | Implemented |
 
 ### Non-Functional Requirements
 
@@ -73,6 +75,7 @@ Vietnamese users face increasing online fraud via phone scams, fake bank account
 | NFR-10 | Persistent knowledge base durability | Survives process restarts when `DATABASE_URL` is configured |
 | NFR-11 | Community report abuse control | Max 5 reports per hashed IP per 24h, no duplicate report for same subject within 24h |
 | NFR-12 | Risk recalculation consistency | Approved community reports update aggregate subject risk |
+| NFR-13 | Bulk crawler idempotency | Re-running with resume mode should avoid duplicate evidence/media for already-ingested posts |
 
 ---
 
@@ -85,7 +88,7 @@ Vietnamese users face increasing online fraud via phone scams, fake bank account
 - **Database**: PostgreSQL (sqlx) for cache and persistent knowledge base
 - **LLM**: Qwen 3.5 (JSON agents) + Qwen 3.6 (streaming detective)
 - **Data Sources**: CheckScam, ChongLuaDao, TinNhiemMang, TrangTrang, Google, DuckDuckGo
-- **Key Features**: SSE streaming, proxy pool, hot-reload agents, 3-tier cache, historical context enrichment, persistent evidence ingest, subject network graph, community report moderation APIs
+- **Key Features**: SSE streaming, proxy pool, hot-reload agents, 3-tier cache, historical context enrichment, persistent evidence ingest, subject network graph, community report moderation APIs, standalone CheckScam bulk crawler, shared media metadata
 
 ### Frontend (SvelteKit)
 
@@ -108,7 +111,7 @@ Vietnamese users face increasing online fraud via phone scams, fake bank account
 | Google | Search engine | phone, bank, url |
 | DuckDuckGo | Search fallback | phone, bank, url |
 
-Community reports are stored separately in the persistent knowledge base and only affect aggregate risk after admin approval.
+Community reports are stored separately in the persistent knowledge base and only affect aggregate risk after admin approval. CheckScam bulk crawl data is stored as `external_report` evidence with `source = "checkscam_crawl"` and does not create `investigations` rows.
 
 ---
 
@@ -142,6 +145,24 @@ Process SSE + Report Replay SSE ─► Narrative timeline + buffered final repor
 ```
 
 Historical context is emitted early as a dedicated SSE event and is also passed into the detective prompt as `historical_context` when a known subject already exists.
+
+### Offline Knowledge Base Seeding
+
+The platform also supports an offline crawler path:
+
+```text
+checkscam-crawler
+  -> paginate WordPress REST posts
+  -> parse detail content
+  -> upsert phone/bank subjects
+  -> insert external evidence
+  -> download/reuse evidence images
+  -> insert media metadata
+  -> create co_mentioned links
+  -> refresh subject risk floors
+```
+
+This path exists to bootstrap subject history before users query the live investigation API.
 
 ---
 
@@ -216,6 +237,7 @@ Frontend runtime note:
 | `REDIS_URL` | Redis connection string for buffered report replay | Optional (falls back to direct SSE report) |
 | `ADMIN_API_KEY` | Shared secret for admin moderation APIs | Optional (admin APIs disabled when missing) |
 | `INVESTIGATION_REPORT_TTL_SECS` | TTL for buffered report stream in Redis | Optional |
+| Writable `data/media/` path | Needed by `checkscam-crawler` for downloaded evidence files | Yes for crawler runs |
 | `PROXY_DIR` | Directory for proxy files | No |
 | `AGENT_CONFIG_DIR` | Directory for agent TOML configs | No |
 | `VITE_API_BASE_URL` | Frontend build-time API base URL for split web/API deployments | Optional |
